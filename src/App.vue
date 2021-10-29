@@ -1,16 +1,21 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <a-layout>
+    <!-- <a-layout-header>header</a-layout-header> -->
+    <a-layout-content>
+      <Content />
+    </a-layout-content>
+    <!-- <a-layout-footer>foooter</a-layout-footer> -->
+  </a-layout>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import Content from './components/content/content.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    HelloWorld
+    Content
   }
 });
 </script>
@@ -22,6 +27,5 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
