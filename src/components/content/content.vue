@@ -1,10 +1,7 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col id="arc" />
+  <!-- <v-container> -->
       <v-col id="nodes" />
-    </v-row>
-  </v-container>
+  <!-- </v-container> -->
 </template>
 
 <script lang="ts">
@@ -21,13 +18,6 @@ export default defineComponent({
   name: "Content",
   setup() {
     let state = reactive({
-      gdp: [
-        { country: "USA", value: 20.5 },
-        { country: "China", value: 13.4 },
-        { country: "Germany", value: 4.0 },
-        { country: "Japan", value: 4.9 },
-        { country: "France", value: 2.8 },
-      ],
       currentNode : null as d3.Selection<any, unknown, null, undefined> | null,
       nodes: [new NodeModel("esif"), new NodeModel("web admin"), new NodeModel("Reward service")],
     });
@@ -35,7 +25,7 @@ export default defineComponent({
     const generateNodes = () => {
       let radius = 50;
       let width = window.outerWidth ;
-      let height = window.outerHeight ;
+      let height = window.innerHeight - 70;
 
       const svg = d3
         .create("svg")
@@ -145,74 +135,8 @@ let parent = d3.select(state.currentNode!.node().parentNode);
 
   
 
-    const generateArc = () => {
-      const w = 500;
-      const h = 500;
-
-      const svg = d3
-        .select("#arc")
-        .append("svg")
-        .attr("width", w)
-        .attr("height", h);
-
-      const sortedGDP = state.gdp.sort((a, b) => (a.value > b.value ? 1 : -1));
-      const color = d3.scaleOrdinal(d3.schemeDark2);
-
-      const max_gdp = d3.max(sortedGDP, (o: { value: any }) => o.value);
-
-      const angleScale = d3
-        .scaleLinear()
-        .domain([0, max_gdp])
-        .range([0, 1.5 * Math.PI]);
-
-      const arc = d3
-        .arc()
-        .innerRadius((d: any, i: number) => (i + 1) * 25)
-        .outerRadius((d: any, i: number) => (i + 2) * 25)
-        .startAngle(angleScale(0))
-        .endAngle((d: any) => angleScale(d.value));
-
-      const g = svg.append("g");
-
-      g.selectAll("path")
-        .data(sortedGDP)
-        .enter()
-        .append("path")
-        .attr("d", arc)
-        .attr("fill", (d: any, i: number) => color(i))
-        .attr("stroke", "#FFF")
-        .attr("stroke-width", "1px")
-        .attr("opacity", 1)
-        .on("mouseenter", (ev, el) => {
-          d3.select(ev.currentTarget)
-            .transition()
-            .duration(200)
-            .attr("opacity", 0.5);
-        })
-        .on("mouseout", (ev) => {
-          d3.select(ev.currentTarget)
-            .transition()
-            .duration(200)
-            .attr("opacity", 1);
-        });
-
-      g.selectAll("text")
-        .data(state.gdp)
-        .enter()
-        .append("text")
-        .on("mouseenter", (ev, el) => {
-          // d3.select(ev.currentTarget)
-        })
-        .text((d: any) => `${d.country} -  ${d.value} Trillion`)
-        .attr("x", -150)
-        .attr("dy", -8)
-        .attr("y", (d: any, i: number) => -(i + 1) * 25);
-
-      g.attr("transform", "translate(200,300)");
-    };
-
+   
     onMounted(() => {
-      // generateArc();
       generateNodes();
     });
 
