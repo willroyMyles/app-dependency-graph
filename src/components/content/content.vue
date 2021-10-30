@@ -72,7 +72,6 @@ export default defineComponent({
         .enter()
         .append("g")
         .attr("z-index", 0);
-    
 
       var link = svg
         .selectAll("line")
@@ -80,18 +79,17 @@ export default defineComponent({
         .enter()
         .append("line")
         .style("stroke", "rgb(40,100,200)")
-        .attr("stroke-opacity", .8)
+        .attr("stroke-opacity", 0.8)
         .attr("stroke-width", 3)
         .attr("x1", (d) => d.target.x)
         .attr("x2", (d) => d.source.x)
         .attr("y1", (d) => d.target.y)
         .attr("y2", (d) => d.source.y);
 
-
-const circles = svg
-.selectAll("circle")
-.data(state.nodes)
-.enter()
+      const circles = svg
+        .selectAll("circle")
+        .data(state.nodes)
+        .enter()
         .append("circle")
         .attr("fill", (d, i) => color(i.toString()))
         .attr("stroke", 2)
@@ -100,13 +98,13 @@ const circles = svg
         .attr("cy", (d) => d.y)
         .attr("z-index", 0)
         .raise()
-        .call(d3
+        .call(
+          d3
             .drag()
             .on("start", dragstarted)
             .on("drag", dragged)
-            .on("end", dragended))
-
-
+            .on("end", dragended)
+        );
 
       const texts = svg
         .selectAll("text")
@@ -124,11 +122,10 @@ const circles = svg
         state.currentNode = el;
       }
 
-      function dragged(e,d ) {
-        
-        d.x = e.x
-        d.y = e.y
-        state.currentNode!.attr("cx", e.x).attr("cy", e.y)
+      function dragged(e, d) {
+        d.x = e.x;
+        d.y = e.y;
+        state.currentNode!.attr("cx", e.x).attr("cy", e.y);
         link
           .attr("x1", function (d) {
             return d.source.x;
@@ -147,14 +144,14 @@ const circles = svg
 
         parent
           .select(`#text-${d.id}`)
-          .attr("x",  e.x)
+          .attr("x", e.x)
           .attr("y", e.y)
-          .attr("transform", "translate(" + [0,75] +")")
+          .attr("transform", "translate(" + [0, 75] + ")");
       }
 
       function dragended(e: any, d: any) {
-        console.log(e,d);
-        
+        console.log(e, d);
+
         state.currentNode = null;
       }
 
