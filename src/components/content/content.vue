@@ -1,6 +1,17 @@
 <template>
   <!-- <v-container> -->
   <v-col id="nodes" />
+  <a-drawer
+    title="basic drawer"
+    placement="right"
+    :closable="false"
+    :visible="drawerVisible"
+    @close="onDrawerClose"
+  >
+    hello world
+    {{state}}
+    <div v-if="currentNode != null"> {{currentNode.name}}</div>
+  </a-drawer>
   <!-- </v-container> -->
 </template>
 
@@ -24,6 +35,7 @@ export default defineComponent({
         new NodeModel("web admin"),
         new NodeModel("Reward service"),
       ],
+      drawerVisible : false
     });
 
     state.nodes[1].downStream.push(state.nodes[2].id);
@@ -67,13 +79,6 @@ export default defineComponent({
 
       var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-      // const node = svg
-      //   .selectAll("g")
-      //   .data(state.nodes)
-      //   .enter()
-      //   .append("g")
-      //   .attr("z-index", 0);
-
       var link = svg
         .selectAll("line")
         .data(linky)
@@ -98,7 +103,7 @@ export default defineComponent({
         .attr("cx", (v, i, e) => v.x)
         .attr("cy", (d) => d.y)
         .attr("z-index", 0)
-        .raise()
+        .on("click", (e, i) => openDrawer(i))
         .call(
           d3
             .drag()
@@ -117,6 +122,19 @@ export default defineComponent({
         .attr("y", (d) => d.y + radius * 1.5)
         .attr("id", (d) => `text-${d.id}`)
         .attr("text-anchor", "middle");
+
+      // function createOptionsCircle(e, i) {
+      //   console.log(e);
+        
+      //          var el = d3.select(e.srcElement);
+
+      //   var option = el
+      //   .append("circle")
+      //   .attr("r", 105)
+      //   .attr("fill", "red")
+      //   .attr("cx", 10)
+      //   .attr("cy", 10)
+      // }
 
       function dragstarted(e: any, d: any) {
         var el = d3.select(e.sourceEvent.srcElement);
@@ -147,14 +165,13 @@ export default defineComponent({
           .select(`#text-${d.id}`)
           .attr("x", e.x)
           .attr("y", e.y + 75)
-          // .attr("transform", "translate(" + [0, 75] + ")");
       }
 
       function dragended(e: any, d: any) {
         state.currentNode = null;
       }
 
-      const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed);
+      const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed)
       let k = height / width;
       var x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
       let y = d3
@@ -179,8 +196,21 @@ export default defineComponent({
       generateNodes();
     });
 
+    function onDrawerClose(){
+      console.log("up");
+      
+      state.drawerVisible = false;
+    }
+
+    function openDrawer(i){
+      state.currentNode = i;
+      state.drawerVisible = true;
+    }
+
     return {
       ...toRefs(state),
+      onDrawerClose,
+      openDrawer
     };
   },
 });
