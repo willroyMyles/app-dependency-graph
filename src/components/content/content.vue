@@ -32,20 +32,11 @@ export default defineComponent({
   setup() {
     let state = reactive({
       currentNode: null as d3.Selection<any, unknown, null, undefined> | null,
-      nodes: [
-        new NodeModel("esif"),
-        new NodeModel("web admin"),
-        new NodeModel("Reward service"),
-      ],
       drawerVisible : false
     });
 
     const d3Store = useThisStore()
     const dataStore = useDataStore()
-
-    state.nodes[1].downStream.push(state.nodes[2].id);
-    state.nodes[0].downStream.push(state.nodes[2].id);
-    state.nodes[1].downStream.push(state.nodes[0].id);
 
     const generateNodes = async () => {
 
@@ -56,6 +47,8 @@ export default defineComponent({
      d3Store.commit("createLine", links)
      d3Store.commit("createCircles", openDrawer)
      d3Store.commit("createText")
+     d3Store.commit("initializeDrag")
+     d3Store.commit("initializeZoom")
           
 
 
@@ -63,59 +56,8 @@ export default defineComponent({
       
 
       
-      // function dragstarted(e: any, d: any) {
-      //   var el = d3.select(e.sourceEvent.srcElement);
-      //   state.currentNode = el;
-      // }
 
-      // function dragged(e, d) {
-      //   d.x = e.x;
-      //   d.y = e.y;
-      //   state.currentNode!.attr("cx", e.x).attr("cy", e.y);
-      //   link
-      //     .attr("x1", function (d) {
-      //       return d.source.x;
-      //     })
-      //     .attr("y1", function (d) {
-      //       return d.source.y;
-      //     })
-      //     .attr("x2", function (d) {
-      //       return d.target.x;
-      //     })
-      //     .attr("y2", function (d) {
-      //       return d.target.y;
-      //     });
 
-      //   let parent = d3.select(state.currentNode!.node().parentNode);
-
-      //   parent
-      //     .select(`#text-${d.id}`)
-      //     .attr("x", e.x)
-      //     .attr("y", e.y + 75)
-      // }
-
-      // function dragended(e: any, d: any) {
-      //   state.currentNode = null;
-      // }
-
-      // const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed)
-      // let k = height / width;
-      // var x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
-      // let y = d3
-      //   .scaleLinear()
-      //   .domain([-4.5 * k, 4.5 * k])
-      //   .range([height, 0]);
-
-      // function zoomed({ transform }: { transform: d3.ZoomTransform }) {
-      //   const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
-      //   const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-      //   circles.attr("transform", transform);
-      //   texts.attr("transform", transform)
-      //   link.attr("transform", transform);
-      // }
-
-      // // apply zoom
-      // svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
       console.log("generated nodes");
 
     //   function handleDoubleClick(e, i){

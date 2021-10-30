@@ -7,7 +7,7 @@ import NodeModel from "@/models/node";
 interface State {
   svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
   nodes: d3.Selection<SVGCircleElement, NodeModel, SVGSVGElement, undefined> | null;
-  links: d3.Selection<SVGLineElement, unknown, SVGSVGElement, undefined> | null;
+  links: d3.Selection<SVGLineElement, any, SVGSVGElement, undefined> | null;
   texts: d3.Selection<SVGTextElement, NodeModel, SVGSVGElement, undefined> | null;
   currentNode: d3.Selection<any, unknown, null, undefined> | null;
   radius: number;
@@ -43,28 +43,6 @@ export default createStore<State>({
       div.append(() => ctx.svg!.node());
     },
 
-    // generateLinks(ctx) {
-    //   const datastore = useDataStore();
-
-    //   // create links
-    //   const links = datastore.state.nodes.map((v, i, nodes) => {
-    //     const arr = [];
-
-    //     for (let index = 0; index < v.downStream.length; index++) {
-    //       const element = v.downStream[index];
-
-    //       arr.push({
-    //         target: nodes.find((a) => a.id == element)!,
-    //         source: v,
-    //         value: 5,
-    //       });
-    //     }
-
-    //     return arr;
-    //   });
-    //  return links.flat();
-    // },
-
     generateSingleLink(ctx, model: NodeModel) {
       console.log("generated");
       
@@ -86,16 +64,8 @@ export default createStore<State>({
         .attr("cy", (d) => d.y)
         .attr("z-index", 0)
         .on("click", (e, i) => onClickCallback())
-        // .call(
-        //   d3
-        //     .drag()
-        //     .on("start", dragstarted)
-        //     .on("drag", dragged)
-        //     .on("end", dragended)
-        // );
     },
     createLine(ctx, lineData : any[]) {
-      console.log(lineData);
       
       ctx.links = ctx.svg!
       .selectAll("line")
@@ -124,6 +94,75 @@ export default createStore<State>({
         .attr("id", (d) => `text-${d.id}`)
         .attr("text-anchor", "middle");
 
+    },
+
+    initializeDrag(ctx){
+
+      ctx.nodes!.call(
+        d3.drag<SVGCircleElement, NodeModel, NodeModel>()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended)
+      );
+
+      function dragstarted(e: any, d: any) {
+        const el = d3.select(e.sourceEvent.srcElement);
+        ctx.currentNode = el;
+      }
+
+      function dragged(e : DragEvent, d : any) {
+        d.x = e.x;
+        d.y = e.y;
+        ctx.currentNode!.attr("cx", e.x).attr("cy", e.y);
+        ctx.links!
+          .attr("x1", function (d) {
+            return d.source.x;
+          })
+          .attr("y1", function (d) {
+            return d.source.y;
+          })
+          .attr("x2", function (d) {
+            return d.target.x;
+          })
+          .attr("y2", function (d) {
+            return d.target.y;
+          });
+
+        const parent = d3.select(ctx.currentNode!.node().parentNode);
+
+        parent
+          .select(`#text-${d.id}`)
+          .attr("x", e.x)
+          .attr("y", e.y + 75)
+      }
+
+      function dragended(e: any, d: any) {
+        ctx.currentNode = null;
+      }
+    },
+
+    initializeZoom(ctx){
+
+      const {height, width, nodes, links, texts, svg} = ctx
+      
+      const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed)
+      const k = height / width;
+      const x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
+      const y = d3
+        .scaleLinear()
+        .domain([-4.5 * k, 4.5 * k])
+        .range([height, 0]);
+
+      function zoomed({ transform } : {transform : any}) {
+        const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
+        const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
+        nodes!.attr("transform", transform);
+        texts!.attr("transform", transform)
+        links!.attr("transform", transform);
+      }
+
+      // apply zoom
+      svg!.call( (d : any) => zoom(d)).call((d:any, t : any) => zoom.transform(d, t), d3.zoomIdentity);
     }
   },
   actions: {
@@ -140,14 +179,11 @@ export default createStore<State>({
           arr.push({
             target: nodes.find((a) => a.id == element)!,
             source: v,
-            value: 5,
           });
         }
 
         return arr;
-      });
-      console.log(links);
-      
+      });      
       return links.flat();
     },
   },
