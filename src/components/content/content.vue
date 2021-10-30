@@ -16,6 +16,8 @@
 </template>
 
 <script lang="ts">
+import {  useThisStore } from "@/store/d3Store";
+import { useDataStore } from "@/store/dataStore";
 import {
   defineComponent,
   onMounted,
@@ -38,159 +40,101 @@ export default defineComponent({
       drawerVisible : false
     });
 
+    const d3Store = useThisStore()
+    const dataStore = useDataStore()
+
     state.nodes[1].downStream.push(state.nodes[2].id);
     state.nodes[0].downStream.push(state.nodes[2].id);
     state.nodes[1].downStream.push(state.nodes[0].id);
 
-    const generateNodes = () => {
-      let radius = 50;
-      let width = window.outerWidth;
-      let height = window.innerHeight - 70;
-
-      const svg = d3
-        .create("svg")
-        .attr("viewBox", ["0", "0", width.toString(), height.toString()])
-        .style("background-color", "lightgrey");
-      d3.select("#nodes").append(() => svg.node());
-
-      d3.range(state.nodes.length).map((i) => {
-        state.nodes[i].x = Math.random() * (width - radius * 2) + radius;
-        state.nodes[i].y = Math.random() * (height - radius * 2) + radius;
-      });
+    const generateNodes = async () => {
 
 
-      // create links
-      const links = state.nodes.map((v, i, nodes) => {
-        var arr = [];
+    d3Store.commit("initialize", d3.select("#nodes"))
+    dataStore.commit("initalize")
+     var links = await d3Store.dispatch("getLinks")
+     d3Store.commit("createLine", links)
+     d3Store.commit("createCircles", openDrawer)
+     d3Store.commit("createText")
+          
 
-        for (let index = 0; index < v.downStream.length; index++) {
-          const element = v.downStream[index];
 
-          arr.push({
-            target: nodes.find((a) => a.id == element)!,
-            source: v,
-            value: 5,
-          });
-        }
 
-        return arr;
-      });
-      var linky = links.flat();
+      
 
-      var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-      var link = svg
-        .selectAll("line")
-        .data(linky)
-        .enter()
-        .append("line")
-        .style("stroke", "rgb(40,100,200)")
-        .attr("stroke-opacity", 0.8)
-        .attr("stroke-width", 3)
-        .attr("x1", (d) => d.target.x)
-        .attr("x2", (d) => d.source.x)
-        .attr("y1", (d) => d.target.y)
-        .attr("y2", (d) => d.source.y);
-
-      const circles = svg
-        .selectAll("circle")
-        .data(state.nodes)
-        .enter()
-        .append("circle")
-        .attr("fill", (d, i) => color(i.toString()))
-        .attr("stroke", 2)
-        .attr("r", radius)
-        .attr("cx", (v, i, e) => v.x)
-        .attr("cy", (d) => d.y)
-        .attr("z-index", 0)
-        .on("click", (e, i) => openDrawer(i))
-        .call(
-          d3
-            .drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended)
-        );
-
-      const texts = svg
-        .selectAll("text")
-        .data(state.nodes)
-        .enter()
-        .append("text")
-        .text((d) => d.name)
-        .attr("x", (d) => d.x)
-        .attr("y", (d) => d.y + radius * 1.5)
-        .attr("id", (d) => `text-${d.id}`)
-        .attr("text-anchor", "middle");
-
-      // function createOptionsCircle(e, i) {
-      //   console.log(e);
-        
-      //          var el = d3.select(e.srcElement);
-
-      //   var option = el
-      //   .append("circle")
-      //   .attr("r", 105)
-      //   .attr("fill", "red")
-      //   .attr("cx", 10)
-      //   .attr("cy", 10)
+      
+      // function dragstarted(e: any, d: any) {
+      //   var el = d3.select(e.sourceEvent.srcElement);
+      //   state.currentNode = el;
       // }
 
-      function dragstarted(e: any, d: any) {
-        var el = d3.select(e.sourceEvent.srcElement);
-        state.currentNode = el;
-      }
+      // function dragged(e, d) {
+      //   d.x = e.x;
+      //   d.y = e.y;
+      //   state.currentNode!.attr("cx", e.x).attr("cy", e.y);
+      //   link
+      //     .attr("x1", function (d) {
+      //       return d.source.x;
+      //     })
+      //     .attr("y1", function (d) {
+      //       return d.source.y;
+      //     })
+      //     .attr("x2", function (d) {
+      //       return d.target.x;
+      //     })
+      //     .attr("y2", function (d) {
+      //       return d.target.y;
+      //     });
 
-      function dragged(e, d) {
-        d.x = e.x;
-        d.y = e.y;
-        state.currentNode!.attr("cx", e.x).attr("cy", e.y);
-        link
-          .attr("x1", function (d) {
-            return d.source.x;
-          })
-          .attr("y1", function (d) {
-            return d.source.y;
-          })
-          .attr("x2", function (d) {
-            return d.target.x;
-          })
-          .attr("y2", function (d) {
-            return d.target.y;
-          });
+      //   let parent = d3.select(state.currentNode!.node().parentNode);
 
-        let parent = d3.select(state.currentNode!.node().parentNode);
+      //   parent
+      //     .select(`#text-${d.id}`)
+      //     .attr("x", e.x)
+      //     .attr("y", e.y + 75)
+      // }
 
-        parent
-          .select(`#text-${d.id}`)
-          .attr("x", e.x)
-          .attr("y", e.y + 75)
-      }
+      // function dragended(e: any, d: any) {
+      //   state.currentNode = null;
+      // }
 
-      function dragended(e: any, d: any) {
-        state.currentNode = null;
-      }
+      // const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed)
+      // let k = height / width;
+      // var x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
+      // let y = d3
+      //   .scaleLinear()
+      //   .domain([-4.5 * k, 4.5 * k])
+      //   .range([height, 0]);
 
-      const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed)
-      let k = height / width;
-      var x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
-      let y = d3
-        .scaleLinear()
-        .domain([-4.5 * k, 4.5 * k])
-        .range([height, 0]);
+      // function zoomed({ transform }: { transform: d3.ZoomTransform }) {
+      //   const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
+      //   const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
+      //   circles.attr("transform", transform);
+      //   texts.attr("transform", transform)
+      //   link.attr("transform", transform);
+      // }
 
-      function zoomed({ transform }: { transform: d3.ZoomTransform }) {
-        const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
-        const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-        circles.attr("transform", transform);
-        texts.attr("transform", transform)
-        link.attr("transform", transform);
-      }
-
-      // apply zoom
-      svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+      // // apply zoom
+      // svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
       console.log("generated nodes");
-    };
+
+    //   function handleDoubleClick(e, i){
+    //     console.log(e, i);
+        
+    //   //create new node
+    //   var node = new NodeModel()
+    //   node.x = e.x
+    //   node.y = e.y
+
+    //   //add node to list
+    //   state.nodes.push(node)
+
+    //   //refresh svg
+    //   // svg.remove()
+    //   generateNodes()
+
+    // }
+    }
 
     onMounted(() => {
       generateNodes();
@@ -202,10 +146,12 @@ export default defineComponent({
       state.drawerVisible = false;
     }
 
-    function openDrawer(i){
-      state.currentNode = i;
+    function openDrawer(){
+      // state.currentNode = i;
       state.drawerVisible = true;
     }
+
+    
 
     return {
       ...toRefs(state),
