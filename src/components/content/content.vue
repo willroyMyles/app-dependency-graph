@@ -46,6 +46,8 @@ export default defineComponent({
         state.nodes[i].y = Math.random() * (height - radius * 2) + radius;
       });
 
+
+      // create links
       const links = state.nodes.map((v, i, nodes) => {
         var arr = [];
 
@@ -62,16 +64,15 @@ export default defineComponent({
         return arr;
       });
       var linky = links.flat();
-      console.log(linky);
 
       var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-      const node = svg
-        .selectAll("g")
-        .data(state.nodes)
-        .enter()
-        .append("g")
-        .attr("z-index", 0);
+      // const node = svg
+      //   .selectAll("g")
+      //   .data(state.nodes)
+      //   .enter()
+      //   .append("g")
+      //   .attr("z-index", 0);
 
       var link = svg
         .selectAll("line")
@@ -145,22 +146,17 @@ export default defineComponent({
         parent
           .select(`#text-${d.id}`)
           .attr("x", e.x)
-          .attr("y", e.y)
-          .attr("transform", "translate(" + [0, 75] + ")");
+          .attr("y", e.y + 75)
+          // .attr("transform", "translate(" + [0, 75] + ")");
       }
 
       function dragended(e: any, d: any) {
-        console.log(e, d);
-
         state.currentNode = null;
       }
 
       const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed);
-
       let k = height / width;
-
       var x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, width]);
-
       let y = d3
         .scaleLinear()
         .domain([-4.5 * k, 4.5 * k])
@@ -169,12 +165,13 @@ export default defineComponent({
       function zoomed({ transform }: { transform: d3.ZoomTransform }) {
         const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
         const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-        node.attr("transform", transform);
+        circles.attr("transform", transform);
+        texts.attr("transform", transform)
         link.attr("transform", transform);
       }
 
       // apply zoom
-      // svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+      svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
       console.log("generated nodes");
     };
 
