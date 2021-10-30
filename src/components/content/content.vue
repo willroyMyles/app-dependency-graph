@@ -26,6 +26,10 @@ export default defineComponent({
       ],
     });
 
+    state.nodes[1].downStream.push(state.nodes[2].id);
+    state.nodes[0].downStream.push(state.nodes[2].id);
+    state.nodes[1].downStream.push(state.nodes[0].id);
+
     const generateNodes = () => {
       let radius = 50;
       let width = window.outerWidth;
@@ -41,6 +45,25 @@ export default defineComponent({
         state.nodes[i].x = Math.random() * (width - radius * 2) + radius;
         state.nodes[i].y = Math.random() * (height - radius * 2) + radius;
       });
+
+      const links = state.nodes.map((v, i, nodes) => {
+        var arr = [];
+
+        for (let index = 0; index < v.downStream.length; index++) {
+          const element = v.downStream[index];
+
+          arr.push({
+            target: nodes.find((a) => a.id == element)!,
+            source: v,
+            value: 5,
+          });
+        }
+
+        return arr;
+      });
+      var linky = links.flat();
+      console.log(linky);
+
       var color = d3.scaleOrdinal(d3.schemeCategory10);
 
       const node = svg
@@ -48,13 +71,27 @@ export default defineComponent({
         .data(state.nodes)
         .enter()
         .append("g")
-        .attr("x", (d, i, j) => {
-          return d.x;
-        })
-        .attr("y", (d) => d.y)
         .attr("z-index", 0);
+    
 
-      const circles = node
+      var link = svg
+        .selectAll("line")
+        .data(linky)
+        .enter()
+        .append("line")
+        .style("stroke", "rgb(40,100,200)")
+        .attr("stroke-opacity", .8)
+        .attr("stroke-width", 3)
+        .attr("x1", (d) => d.target.x)
+        .attr("x2", (d) => d.source.x)
+        .attr("y1", (d) => d.target.y)
+        .attr("y2", (d) => d.source.y);
+
+
+const circles = svg
+.selectAll("circle")
+.data(state.nodes)
+.enter()
         .append("circle")
         .attr("fill", (d, i) => color(i.toString()))
         .attr("stroke", 2)
@@ -62,19 +99,24 @@ export default defineComponent({
         .attr("cx", (v, i, e) => v.x)
         .attr("cy", (d) => d.y)
         .attr("z-index", 0)
-        .call(
-          d3
+        .raise()
+        .call(d3
             .drag()
             .on("start", dragstarted)
             .on("drag", dragged)
-            .on("end", dragended)
-        );
+            .on("end", dragended))
 
-      const texts = node
+
+
+      const texts = svg
+        .selectAll("text")
+        .data(state.nodes)
+        .enter()
         .append("text")
         .text((d) => d.name)
         .attr("x", (d) => d.x)
         .attr("y", (d) => d.y + radius * 1.5)
+        .attr("id", (d) => `text-${d.id}`)
         .attr("text-anchor", "middle");
 
       function dragstarted(e: any, d: any) {
@@ -82,23 +124,37 @@ export default defineComponent({
         state.currentNode = el;
       }
 
-      function dragged(e: any, d: any) {
-        var el = e.sourceEvent.srcElement;
-
-        state.currentNode!.attr("cx", (d.x = e.x)).attr("cy", (d.y = e.y));
+      function dragged(e,d ) {
+        
+        d.x = e.x
+        d.y = e.y
+        state.currentNode!.attr("cx", e.x).attr("cy", e.y)
+        link
+          .attr("x1", function (d) {
+            return d.source.x;
+          })
+          .attr("y1", function (d) {
+            return d.source.y;
+          })
+          .attr("x2", function (d) {
+            return d.target.x;
+          })
+          .attr("y2", function (d) {
+            return d.target.y;
+          });
 
         let parent = d3.select(state.currentNode!.node().parentNode);
 
         parent
-          .select("text")
-          .attr("x", (d.x = e.x))
-          .attr("y", (d.y = e.y + 75));
+          .select(`#text-${d.id}`)
+          .attr("x",  e.x)
+          .attr("y", e.y)
+          .attr("transform", "translate(" + [0,75] +")")
       }
 
       function dragended(e: any, d: any) {
-        d3.select(e.sourceEvent.srcElement)
-          .classed("active", false)
-          .attr("z-index", 0);
+        console.log(e,d);
+        
         state.currentNode = null;
       }
 
@@ -117,10 +173,11 @@ export default defineComponent({
         const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
         const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
         node.attr("transform", transform);
+        link.attr("transform", transform);
       }
 
       // apply zoom
-      svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+      // svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
       console.log("generated nodes");
     };
 
@@ -139,5 +196,8 @@ export default defineComponent({
 .content {
   /* height: 80vh; */
   background-color: white;
+}
+.link {
+  fill: none;
 }
 </style>
