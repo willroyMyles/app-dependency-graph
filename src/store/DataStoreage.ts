@@ -10,13 +10,8 @@ export const store ={
             new NodeModel("web admin"),
             new NodeModel("Reward service"),
           ] as Array<NodeModel>,
+          currentObjectNode : null as NodeModel | null
     }),
-
-    nodes: [
-      new NodeModel("esif"),
-      new NodeModel("web admin"),
-      new NodeModel("Reward service"),
-    ] as Array<NodeModel>,
 
     initialize() {  
         const radius = 50
@@ -31,8 +26,6 @@ export const store ={
         this.state.nodes[1].downStream.push(this.state.nodes[2].id);
         this.state.nodes[0].downStream.push(this.state.nodes[2].id);
         this.state.nodes[1].downStream.push(this.state.nodes[0].id);
-
-        this.nodes  = this.state.nodes as NodeModel[];
       },
 }
 

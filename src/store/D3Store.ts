@@ -15,7 +15,9 @@ export const store = {
     links: null,
     texts: null,
     currentNode: null,
-    onClickCallback : null
+    onClickCallback : null,
+    zx : 1,
+    zy : 1
   }),
 
   initialize(div :  d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
@@ -31,9 +33,9 @@ export const store = {
       this.state.onClickCallback = onclkcallback;
   },
 
-  createGraph({node = null} : {node : NodeModel | null}){
+  createGraph(){
       console.log(this.state);      
-      this.createCircles({node : null})
+      this.createCircles()
     this.createLine()
     this.createText()
     this.initializeDrag()
@@ -42,10 +44,10 @@ export const store = {
     this.state.svg?.selectAll("circle").exit().remove()
   },
 
-  createCircles({node = null} : {node : NodeModel | null}) {
+  createCircles() {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    const nodes = this.state.svg?.selectAll<SVGCircleElement, NodeModel>("circle").data(datastore.state.nodes);
+    const nodes = this.state.svg?.selectAll<SVGCircleElement, unknown>("circle").data(datastore.state.nodes);
 
     nodes?.join(
         enter => enter
@@ -53,7 +55,10 @@ export const store = {
     .attr("cx", d=> d.x)
     .attr("cy", d => d.y)
     .attr("fill", d => color(d.name))
-    .on("click", this.state.onClickCallback)
+    .on("click", (e, d) => {      
+      datastore.state.currentObjectNode = d;
+      this.state.onClickCallback(d);
+    })
     .transition()
     .duration(750)
     .attr("opacity", 1)
@@ -127,13 +132,6 @@ export const store = {
 
   initializeDrag() {
     const st = this.state
-    // this.state.nodes!.call(
-    //   d3
-    //     .drag<SVGCircleElement, NodeModel, NodeModel>()
-    //     .on("start", dragstarted)
-    //     .on("drag", dragged)
-    //     .on("end", dragended)
-    // );
 
     this.state.svg?.selectAll<SVGCircleElement, NodeModel>("circle")
     .call(
@@ -151,7 +149,7 @@ export const store = {
     function dragged(e: DragEvent, d: any) {
       d.x = e.x;
       d.y = e.y;
-      st.currentNode!.attr("cx", e.x).attr("cy", e.y);
+      st.currentNode!.attr("cx", e.x * st.zx).attr("cy", e.y * st.zy);
       st.svg?.selectAll<SVGLineElement, {source : NodeModel, target:NodeModel}>("line").attr("x1", function (d) {
           return d.source.x;
         })
@@ -223,7 +221,7 @@ export const store = {
       datastore.state.nodes.push(node);
 
           
-            createGraphInternal(node);
+            createGraphInternal();
     
 
 
@@ -234,8 +232,8 @@ export const store = {
 };
 
 
-function createGraphInternal(node : NodeModel){
-    store.createGraph({node : node})
+function createGraphInternal(){
+    store.createGraph()
 }
 
 
@@ -257,4 +255,6 @@ interface State {
     > | null;
     currentNode: d3.Selection<any, unknown, null, undefined> | null;
     onClickCallback : any | null
+    zx : any
+    zy : any
   }
