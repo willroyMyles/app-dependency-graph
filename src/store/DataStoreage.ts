@@ -1,4 +1,5 @@
 import NodeModel from "@/models/node";
+import ServiceModel from "@/models/ServiceModel";
 import { reactive } from "@vue/runtime-core";
 import * as d3 from "d3";
 import {store as d3store} from './D3Store'
@@ -7,9 +8,9 @@ import {store as d3store} from './D3Store'
 export const store ={
     state : reactive({
         nodes: [
-            new NodeModel("esif"),
-            new NodeModel("web admin"),
-            new NodeModel("Reward service"),
+            new ServiceModel("esif"),
+            new ServiceModel("web admin"),
+            new ServiceModel("Reward service"),
           ] as Array<NodeModel>,
           currentObjectNode : null as NodeModel | null
     }),
@@ -24,9 +25,9 @@ export const store ={
           this.state.nodes[i].y = Math.random() * (height - radius * 2) + radius;
         });
   
-        this.state.nodes[1].downStream.push(this.state.nodes[2].id);
-        this.state.nodes[0].downStream.push(this.state.nodes[2].id);
-        this.state.nodes[1].downStream.push(this.state.nodes[0].id);
+        (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[2].id);
+        (this.state.nodes[0] as ServiceModel).connections.push(this.state.nodes[2].id);
+        (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[0].id);
       },
 
     getNode(id : string) : NodeModel | undefined{

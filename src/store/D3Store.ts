@@ -3,6 +3,8 @@ import { reactive } from "@vue/runtime-core";
 import Constants from './ConstantsStore'
 import * as d3 from "d3";
 import {store as datastore} from './DataStoreage'
+import { NodeType } from "@/enums/NodeEnum";
+import ServiceModel from "@/models/ServiceModel";
 
 
 
@@ -78,15 +80,18 @@ export const store = {
     const { nodes } = datastore.state;
 
     const links = nodes.map((v, i, nodes) => {
-      const arr = [];
+      const arr : any[] = [];
+      
 
-      for (let index = 0; index < v.downStream.length; index++) {
-        const element = v.downStream[index];
-
-        arr.push({
-          target: nodes.find((a) => a.id == element)!,
-          source: v,
-        });
+      if(v.type == NodeType.SERVICE){
+        for (let index = 0; index < (v as ServiceModel).connections.length; index++) {
+          const element =(v as ServiceModel).connections[index];
+  
+          arr.push({
+            target: nodes.find((a) => a.id == element)!,
+            source: v,
+          });
+        }
       }
 
       return arr;
