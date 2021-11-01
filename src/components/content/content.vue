@@ -6,17 +6,35 @@
     placement="right"
     :closable="false"
     :visible="drawerVisible"
+    width="40%"
     @close="onDrawerClose"
   >
-    hello world
-    {{ node?.name }}
 
 <div v-if="node">
 
-    <div v-for="item in Object.entries(node)" :key="item.key">
-      {{item[0]}} : {{item[1]}}
-    </div>
+      <ConfigView :nodeid="node.id" ref="updateNode"/>
+
 </div>
+      <div
+        :style="{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          borderTop: '1px solid #e9e9e9',
+          padding: '10px 16px',
+          background: '#fff',
+          textAlign: 'right',
+          zIndex: 1,
+        }"
+      >
+        <a-button :style="{ marginRight: '8px' }" @click="onClose">
+          Cancel
+        </a-button>
+        <a-button type="primary" @click="onCommit, save()">
+          Commit
+        </a-button>
+      </div>
   </a-drawer>
   <!-- </v-container> -->
 </template>
@@ -27,22 +45,27 @@ import {
   defineComponent,
   onMounted,
   reactive,
+  ref,
   toRefs,
 } from "@vue/runtime-core";
+import { VueElement } from "@vue/runtime-dom";
 import * as d3 from "d3";
 import { store as d3Store } from "../../store/D3Store";
 import {store as datastore} from '../../store/DataStoreage'
-
+import ConfigView from '../ConfigView.vue'
 export default defineComponent({
   name: "Content",
+  components : {
+    ConfigView
+  },
   setup() {
-    let state = reactive({
+    const state = reactive({
       drawerVisible: false,
-      node : null as NodeModel | null
+      node : null as NodeModel | null,
     });
 
-    // const d3Store = useThisStore()
-    
+    const updateNode = ref()
+
 
     const generateNodes = async () => {
       d3Store.initialize(d3.select("#nodes"));
@@ -64,18 +87,31 @@ export default defineComponent({
 
     function onDrawerClose() {
       state.drawerVisible = false;
+      state.node = null
+      
     }
 
     function openDrawer(node : NodeModel) {
-      console.log(node);
       state.node = node
       state.drawerVisible = true;
+    }
+
+    function onCommit(){
+      //write changes
+    }
+
+    function save(){
+      updateNode.value.updateNode();
+      onDrawerClose()
     }
 
     return {
       ...toRefs(state),
       onDrawerClose,
       openDrawer,
+      onCommit,
+      save,
+      updateNode
     };
   },
 });

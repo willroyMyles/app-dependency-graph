@@ -16,8 +16,12 @@ export const store = {
     texts: null,
     currentNode: null,
     onClickCallback : null,
-    zx : 1,
-    zy : 1
+    zoom : {
+      k : 1,
+      x : 1,
+      y : 1
+    },
+    transform : [1,1]
   }),
 
   initialize(div :  d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
@@ -34,7 +38,7 @@ export const store = {
   },
 
   createGraph(){
-      console.log(this.state);      
+    
       this.createCircles()
     this.createLine()
     this.createText()
@@ -117,17 +121,29 @@ export const store = {
   },
 
   createText() {
-    this.state.texts =       this.state.svg!.selectAll("text")
+    const texts = this.state.svg!.selectAll<SVGTextElement, unknown>("text")
       .data(datastore.state.nodes as NodeModel[])
+
       
-    //   .text(d => d.name +"updated")
-      .enter()
+      texts.join(
+        enter => enter
       .append("text")
       .text((d) => d.name)
       .attr("x", (d) => d.x)
       .attr("y", (d) => d.y + Constants.radius * 1.5)
       .attr("id", (d) => `text-${d.id}`)
-      .attr("text-anchor", "middle");
+      .attr("text-anchor", "middle")
+      .attr("fill", "transparent")
+      .transition()
+      .duration(1750)
+      .attr("fill", "black"),
+        update => update
+        .transition()
+        .duration(1750)
+        .text(d => d.name)
+      )
+
+      
   },
 
   initializeDrag() {
@@ -146,11 +162,20 @@ export const store = {
       st.currentNode = el;
     }
 
-    function dragged(e: DragEvent, d: any) {
-      d.x = e.x;
-      d.y = e.y;
-      st.currentNode!.attr("cx", e.x * st.zx).attr("cy", e.y * st.zy);
-      st.svg?.selectAll<SVGLineElement, {source : NodeModel, target:NodeModel}>("line").attr("x1", function (d) {
+
+    function dragged(e: any, d: any) {
+      
+      //update current info model
+      //times the difference between mouse events with the current scale of the zoom the add it t the current position to get the new position
+      d.x +=  e.dx * 1/st.zoom.k!
+      d.y +=  e.dy * 1/st.zoom.k!
+
+      //update the visual node on graph
+      st.currentNode!.attr("cx", d.x ).attr("cy", d.y );
+
+      //get lines and update them from infomodel
+      st.svg?.selectAll<SVGLineElement, {source : NodeModel, target:NodeModel}>("line")
+      .attr("x1", function (d) {
           return d.source.x;
         })
         .attr("y1", function (d) {
@@ -163,16 +188,20 @@ export const store = {
           return d.target.y;
         });
 
+      // get the parent of the current node wich is the svg - could also call the svg instead of parent
       const parent = d3.select(st.currentNode!.node().parentNode);
 
+      //update the text positions with y offset
       parent
         .select(`#text-${d.id}`)
-        .attr("x", e.x)
-        .attr("y", e.y + 75);
+        .attr("x", d.x)
+        .attr("y", d.y + 75);
     }
 
     function dragended(e: any, d: any) {
       st.currentNode = null;
+      console.log(st.svg);
+      
     }
   },
 
@@ -180,7 +209,8 @@ export const store = {
     
     const st = this.state
 
-    const zoom = d3.zoom().scaleExtent([0.5, 62]).on("zoom", zoomed);
+    const zoom = d3.zoom().scaleExtent([0.2, 3]).on("zoom", t =>  zoomed(t));
+    
     const k = Constants.height / Constants.width;
     const x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, Constants.width]);
     const y = d3
@@ -188,18 +218,34 @@ export const store = {
       .domain([-4.5 * k, 4.5 * k])
       .range([Constants.height, 0]);
 
-    function zoomed({ transform }: { transform: any }) {        
+
+    function zoomed({ transform } : {transform : d3.ZoomTransform}) {              
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-      st.svg?.selectAll("circle").attr("transform", transform);
-      st.svg?.selectAll("text").attr("transform", transform);
-      st.svg?.selectAll("line").attr("transform", transform);
+      st.transform = [transform.x, transform.y];
+      st.zoom.x = transform.x
+      st.zoom.y = transform.y
+      st.zoom.k = transform.k
+      
+      st.svg?.selectAll("circle").attr("transform", transform as any);
+      st.svg?.selectAll("text").attr("transform", transform as any);
+      st.svg?.selectAll("line").attr("transform", transform as any);
     }
 
     // apply zoom
     st.svg!
-      .call((d: any) => zoom(d))
-      .call((d: any, t: any) => zoom.transform(d, t), d3.zoomIdentity)
+      .call((d: d3.Selection<SVGSVGElement, undefined, null, undefined>, a:any, b:any, c : any) => {
+
+        
+        zoom(d as any)
+      })
+      .call((d: any, t: any) => {
+        // console.log(`what is t ${t}`);
+        
+        zoom.transform(d, t)
+      }, 
+      d3.zoomIdentity
+        )
       .on("dblclick.zoom", null)
   },
 
@@ -255,6 +301,11 @@ interface State {
     > | null;
     currentNode: d3.Selection<any, unknown, null, undefined> | null;
     onClickCallback : any | null
-    zx : any
-    zy : any
+    zoom : {
+      k : number | null,
+      x : number | null,
+      y : number | null
+
+    },
+    transform : any
   }

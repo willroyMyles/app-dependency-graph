@@ -1,6 +1,7 @@
 import NodeModel from "@/models/node";
 import { reactive } from "@vue/runtime-core";
 import * as d3 from "d3";
+import {store as d3store} from './D3Store'
 
 
 export const store ={
@@ -27,6 +28,24 @@ export const store ={
         this.state.nodes[0].downStream.push(this.state.nodes[2].id);
         this.state.nodes[1].downStream.push(this.state.nodes[0].id);
       },
+
+    getNode(id : string) : NodeModel | undefined{
+      return this.state.nodes.find( p => p.id == id) as NodeModel
+    },
+
+    getNamebuId(id : string) : string | undefined{
+      return this.getNode(id)?.name
+    },
+
+    updateNode(node : NodeModel){
+      const index = this.state.nodes.indexOf(this.getNode(node.id)!)
+      this.state.nodes[index] = node;
+      console.log(this.state.nodes[index]);
+      d3store.createGraph();
+
+      
+      // should update graph
+    }
 }
 
 store.initialize()
