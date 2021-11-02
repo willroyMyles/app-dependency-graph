@@ -4,5 +4,5 @@ export default  {
     sideWidth : screen.width * .2,
     content_width : screen.width  ,
     width : screen.width * .8,
-    height : screen.height
+    height : screen.height * .84
 }
