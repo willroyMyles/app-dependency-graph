@@ -38,22 +38,21 @@
 <script lang="ts">
 import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
-import { defineComponent , reactive, toRefs} from '@vue/runtime-core'
+import { defineComponent , onUpdated, reactive, toRefs} from '@vue/runtime-core'
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
 
 export default defineComponent({
     name : "ConfigView",
     props : ["nodeid", "save"],
+    
     setup(props) {
         const state = reactive({
             node : new NodeModel(),
             subenum : SubEnum,
             nodetype : NodeType
         })
-
         
-
         // copy our model to store node model
         state.node = {
             ...store.getNode(props.nodeid)!
@@ -69,6 +68,11 @@ export default defineComponent({
             console.log(state.node.type)
         }
 
+        onUpdated(()=>{
+            state.node = {
+            ...store.getNode(props.nodeid)!
+        }
+        })
     
 
         return {
@@ -80,6 +84,8 @@ export default defineComponent({
 
         }
     },
+
+    
 })
 </script>
 

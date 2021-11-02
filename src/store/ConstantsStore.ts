@@ -1,6 +1,8 @@
 
 export default  {
     radius : 50,
-    width : window.innerWidth,
-    height : window.innerHeight
+    sideWidth : screen.width * .2,
+    content_width : screen.width  ,
+    width : screen.width * .8,
+    height : screen.height
 }

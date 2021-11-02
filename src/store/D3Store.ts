@@ -18,26 +18,35 @@ export const store = {
     texts: null,
     currentNode: null,
     onClickCallback : null,
-    zoom : {
-      k : 1,
-      x : 1,
-      y : 1
-    },
-    transform : [1,1]
+    scale : 1,
+    onNodeClickCallback : null,
+    onSvgClickCallback : null
   }),
 
   initialize(div :  d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
+    const h = screen.width/screen.height
     this.state.svg = d3
       .create("svg")
-      .attr("viewBox", `0 0 ${Constants.width} ${Constants.height}`)
+      .attr("viewBox", `0 0 ${screen.availWidth} ${screen.availHeight * 1.1}`)
       .style("background-color", "lightgrey")
-      .attr("id", "svg");
+      .attr("id", "svg")
+      .on("click", () =>{
+        if( this.state.onSvgClickCallback != null)  this.state.onSvgClickCallback()
+      })
+
+
     div.append(()=> this.state.svg!.node());
   },
 
   setOnClickCallback(onclkcallback : any){
-      this.state.onClickCallback = onclkcallback;
-  },
+    this.state.onClickCallback = onclkcallback;
+},
+setOnNodeClickCallback(onclkcallback : any){
+  this.state.onNodeClickCallback = onclkcallback;
+},
+setOnSvgClickCallback(onclkcallback : any){
+  this.state.onSvgClickCallback = onclkcallback;
+},
 
   createGraph(){
     
@@ -61,9 +70,10 @@ export const store = {
     .attr("cx", d=> d.x)
     .attr("cy", d => d.y)
     .attr("fill", d => color(d.name))
-    .on("click", (e, d) => {      
+    .on("click", (e : Event, d) => {      
+      e.stopPropagation()
       datastore.state.currentObjectNode = d;
-      this.state.onClickCallback(d);
+      if(this.state.onNodeClickCallback != null) this.state.onNodeClickCallback(e,d);
     })
     .transition()
     .duration(750)
@@ -81,9 +91,10 @@ export const store = {
 
     const links = nodes.map((v, i, nodes) => {
       const arr : any[] = [];
-      
-
-      if(v.type == NodeType.SERVICE){
+                  
+      if(v.type.value == NodeType.SERVICE.value){
+        console.log("true");
+        
         for (let index = 0; index < (v as ServiceModel).connections.length; index++) {
           const element =(v as ServiceModel).connections[index];
   
@@ -97,6 +108,9 @@ export const store = {
       return arr;
     });
     const lineData = links.flat();
+
+    console.log(lineData);
+    
 
 
     const lines = this.state.svg?.selectAll<SVGLineElement, unknown>("line").data(lineData)
@@ -172,8 +186,8 @@ export const store = {
       
       //update current info model
       //times the difference between mouse events with the current scale of the zoom the add it t the current position to get the new position
-      d.x +=  e.dx * 1/st.zoom.k!
-      d.y +=  e.dy * 1/st.zoom.k!
+      d.x +=  e.dx * 1/st.scale!
+      d.y +=  e.dy * 1/st.scale!
 
       //update the visual node on graph
       st.currentNode!.attr("cx", d.x ).attr("cy", d.y );
@@ -227,10 +241,7 @@ export const store = {
     function zoomed({ transform } : {transform : d3.ZoomTransform}) {              
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-      st.transform = [transform.x, transform.y];
-      st.zoom.x = transform.x
-      st.zoom.y = transform.y
-      st.zoom.k = transform.k
+      st.scale = transform.k
       
       st.svg?.selectAll("circle").attr("transform", transform as any);
       st.svg?.selectAll("text").attr("transform", transform as any);
@@ -306,11 +317,7 @@ interface State {
     > | null;
     currentNode: d3.Selection<any, unknown, null, undefined> | null;
     onClickCallback : any | null
-    zoom : {
-      k : number | null,
-      x : number | null,
-      y : number | null
-
-    },
-    transform : any
+    onNodeClickCallback : any | null
+    onSvgClickCallback : any | null
+    scale : number
   }
