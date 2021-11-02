@@ -1,4 +1,4 @@
-import { NodeType } from "@/enums/NodeEnum";
+import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import DatabaseModel from "./databaseModel";
 import IpAddressModel from "./ipAddressModel";
 import NodeModel from "./node";

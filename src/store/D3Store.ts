@@ -3,7 +3,7 @@ import { reactive } from "@vue/runtime-core";
 import Constants from './ConstantsStore'
 import * as d3 from "d3";
 import {store as datastore} from './DataStoreage'
-import { NodeType } from "@/enums/NodeEnum";
+import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
 
 

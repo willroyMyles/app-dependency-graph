@@ -1,4 +1,4 @@
-import { NodeType } from "@/enums/NodeEnum";
+import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import {uuid} from "vue-uuid";
 import DatabaseModel from "./databaseModel";
 import IpAddressModel from "./ipAddressModel";
@@ -8,7 +8,7 @@ export default class NodeModel {
     name : string
     x : number
     y : number
-    type : NodeType
+    type : SubEnum
     
     constructor(name = "random"){
         this.x = 0.0;
