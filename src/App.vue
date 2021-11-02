@@ -4,18 +4,85 @@
     <a-layout-content>
       <Content />
     </a-layout-content>
+    <a-layout-sider :width="width" height="100%"  style="background : white">
+      <div v-if="node != null">
+        <div>
+          <span>{{node.name}} configuration</span>
+        </div>
+        <hr>
+      <ConfigView :nodeid="node.id" ref="updateNode" />
+<div 
+        :style="{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          borderTop: '1px solid #e9e9e9',
+          padding: '10px 16px',
+          background: '#fff',
+          textAlign: 'right',
+          zIndex: 1,
+        }"
+      >
+        <a-button :style="{ marginRight: '8px' }" @click="onDeselect">
+          Cancel
+        </a-button>
+        <a-button type="primary" @click="commit">
+          Commit
+        </a-button>
+        
+      </div>
+      </div>
+    </a-layout-sider>
     <!-- <a-layout-footer>foooter</a-layout-footer> -->
   </a-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, reactive, ref, toRefs } from 'vue';
 import Content from './components/content/content.vue'
+import NodeModel from './models/node';
+import ConstantsStore from './store/ConstantsStore';
+import ConfigView from './components/ConfigView.vue'
+import { store as d3Store } from "./store/D3Store";
 
 export default defineComponent({
   name: 'App',
   components: {
-    Content
+    Content,
+    ConfigView
+  },
+  setup(){
+
+    const state = reactive({
+      node : null as NodeModel | null,
+    })
+
+    const updateNode = ref()
+
+    d3Store.setOnNodeClickCallback(onSelect)
+    d3Store.setOnSvgClickCallback(onDeselect)
+
+    function onSelect(e : any, node : NodeModel) {
+      state.node = null
+            
+      state.node = node
+    }
+
+    function onDeselect() {
+      state.node = null
+    }
+
+    function commit(){
+      updateNode.value.updateNode()
+    }
+
+    return {
+      width : ConstantsStore.sideWidth,
+      ...toRefs(state),
+      updateNode,
+      commit
+    }
   }
 });
 </script>
@@ -27,5 +94,11 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.sidebar {
+  background: #fff;
+  color: red;
+  background-color: red;
 }
 </style>
