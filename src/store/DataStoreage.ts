@@ -43,8 +43,6 @@ export const store ={
       this.state.nodes[index] = node;
       console.log(this.state.nodes[index]);
       d3store.createGraph();
-
-      
       // should update graph
     }
 }

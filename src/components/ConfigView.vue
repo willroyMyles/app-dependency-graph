@@ -19,7 +19,14 @@
                     none
                 </span>
                 <span v-if=" property[1] instanceof Array">
-                    array
+                    <!-- if is connections  -->
+                    <div v-if="property[0] == 'connections'">
+                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
+                        <a-select-option v-for="val in datastore.state.nodes" :key="val.id" :value="val.id" >
+                            {{val.name}}
+                        </a-select-option>
+                    </a-select>
+                    </div>
                 </span>
                 <span v-if=" property[1] instanceof subenum">
                     <select v-model="node[property[0]]"  >
@@ -38,6 +45,7 @@
 <script lang="ts">
 import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
+import ServiceModel from '@/models/ServiceModel';
 import { defineComponent , onUpdated, reactive, toRefs} from '@vue/runtime-core'
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
@@ -48,14 +56,15 @@ export default defineComponent({
     
     setup(props) {
         const state = reactive({
-            node : new NodeModel(),
+            node : new ServiceModel(),
             subenum : SubEnum,
-            nodetype : NodeType
+            nodetype : NodeType,
+            arr : ["arr"]
         })
         
         // copy our model to store node model
         state.node = {
-            ...store.getNode(props.nodeid)!
+            ...store.getNode(props.nodeid)! as ServiceModel
         }
 
         function updateNode(){
@@ -68,9 +77,13 @@ export default defineComponent({
             console.log(state.node.type)
         }
 
+        function handleConnections(d:any){
+            state.node.connections = d            
+        }
+
         onUpdated(()=>{
             state.node = {
-            ...store.getNode(props.nodeid)!
+            ...store.getNode(props.nodeid)! as ServiceModel
         }
         })
     
@@ -80,7 +93,9 @@ export default defineComponent({
             ...toRefs(state),
             onchange,
             updateNode,
-            updateType
+            updateType,
+            handleConnections,
+            datastore : store
 
         }
     },

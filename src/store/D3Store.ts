@@ -50,13 +50,13 @@ export const store = {
   },
 
   createGraph() {
-    this.createCircles();
     this.createLine();
+    this.createCircles();
     this.createText();
     this.initializeDrag();
     this.initializeZoom()
 
-    this.state.svg?.selectAll("circle").exit().remove();
+    this.state.svg?.selectAll("circle").raise();
   },
 
   createCircles() {
@@ -126,14 +126,16 @@ export const store = {
           .append("line")
           .style("stroke", "rgb(40,100,200)")
           .attr("stroke-opacity", 0.8)
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("opacity", 0.2)
           .attr("x2", (d) => d.source.x)
           .attr("y2", (d) => d.source.y)
-          .attr("x1", (d) => d.target.x)
-          .attr("opacity", 0.2)
-          .attr("y1", (d) => d.target.y)
           .transition()
           .duration(1750)
-          .attr("stroke-width", 3),
+          .attr("stroke-width", 3)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y),
       (update) =>
         update
           .transition()
