@@ -25,7 +25,10 @@ export const store = {
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
       .create("svg")
-      .attr("viewBox", `0 0 ${Constants.content_width * .8} ${Constants.height}`)
+      .attr(
+        "viewBox",
+        `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
+      )
       .style("background-color", "lightgrey")
       .attr("id", "svg")
       .on("click", () => {
@@ -35,7 +38,7 @@ export const store = {
 
     div
       .append(() => this.state.svg!.node())
-      .attr("width", Constants.content_width * .8)
+      .attr("width", Constants.content_width * 0.8)
       .attr("height", Constants.height);
   },
 
@@ -54,7 +57,7 @@ export const store = {
     this.createCircles();
     this.createText();
     this.initializeDrag();
-    this.initializeZoom()
+    this.initializeZoom();
 
     this.state.svg?.selectAll("circle").raise();
   },
@@ -64,7 +67,7 @@ export const store = {
 
     const nodes = this.state.svg
       ?.selectAll<SVGCircleElement, unknown>("circle")
-      .data(datastore.state.nodes);
+      .data(datastore.state.nodes.values());
 
     nodes?.join(
       (enter) =>
@@ -88,49 +91,44 @@ export const store = {
     );
   },
   createLine() {
-    const { nodes } = datastore.state;
-
-    const links = nodes.map((v, i, nodes) => {
-      const arr: any[] = [];
-
-      if (v.type.value == NodeType.SERVICE.value) {
-        console.log("true");
-
-        for (
-          let index = 0;
-          index < (v as ServiceModel).connections.length;
-          index++
-        ) {
-          const element = (v as ServiceModel).connections[index];
-
-          arr.push({
-            target: nodes.find((a) => a.id == element)!,
-            source: v,
-          });
-        }
-      }
-
-      return arr;
-    });
-    const lineData = links.flat();
+    const lineData = datastore.getLinks();
 
     console.log(lineData);
 
     const lines = this.state.svg
-      ?.selectAll<SVGLineElement, unknown>("line")
-      .data(lineData);
+      ?.selectAll<SVGLineElement, { source: NodeModel; target: NodeModel }>(
+        "line"
+      )
+      .data(lineData, (d) => d.source.id + d.target.id);
+
+    const markers = this.state.svg?.append("defs").append("marker");
+    const markerSize = 14;
+    markers
+      ?.attr("viewBox", "0 -5 10 10")
+      .attr("id", "arrow")
+      .attr("refX", Constants.radius - markerSize - 3)
+      .attr("refY", 0)
+      .attr("markerWidth", markerSize / 2)
+      .attr("markerHeight", markerSize / 2)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("class", "arrowHead")
+      .attr("fill", "red")
+      .attr("stroke-width", 2);
 
     lines?.join(
       (enter) =>
         enter
           .append("line")
           .style("stroke", "rgb(40,100,200)")
-          .attr("stroke-opacity", 0.8)
+          .attr("stroke-opacity", 1)
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
-          .attr("opacity", 0.2)
+          .attr("opacity", 0.9)
           .attr("x2", (d) => d.source.x)
           .attr("y2", (d) => d.source.y)
+          .attr("marker-end", "url(#arrow)")
           .transition()
           .duration(1750)
           .attr("stroke-width", 3)
@@ -138,17 +136,28 @@ export const store = {
           .attr("y2", (d) => d.target.y),
       (update) =>
         update
-          .transition()
+          .transition("exit line")
           .duration(700)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y)
           .attr("stroke-width", 3)
-          .style("stroke", "rgb(140,100,200)")
+          .style("stroke", "rgb(140,100,200)"),
+      (exit) =>
+        exit
+          .transition()
+          .duration(1700)
+          .attr("stroke-opacity", 0)
+          .attr("stroke-width", 0)
+          .attr("x2", (d) => d.source.x)
+          .attr("y2", (d) => d.source.y)
+          .remove()
     );
   },
 
   createText() {
     const texts = this.state
       .svg!.selectAll<SVGTextElement, unknown>("text")
-      .data(datastore.state.nodes as NodeModel[]);
+      .data(datastore.state.nodes.values());
 
     texts.join(
       (enter) =>
@@ -261,9 +270,7 @@ export const store = {
 
     // apply zoom
     st.svg!.call(
-      (
-        d: d3.Selection<SVGSVGElement, undefined, null, undefined>,
-      ) => {
+      (d: d3.Selection<SVGSVGElement, undefined, null, undefined>) => {
         zoom(d as any);
       }
     )
@@ -279,7 +286,7 @@ export const store = {
     const st = this.state;
 
     function handleDoubleClick(e: any, i: any) {
-      const t = st.transform.invert([e.x, e.y])
+      const t = st.transform.invert([e.x, e.y]);
 
       //create new node
       const node = new ServiceModel();
@@ -287,7 +294,7 @@ export const store = {
       node.y = t[1];
 
       //add node to list
-      datastore.state.nodes.push(node);
+      datastore.addNode(node);
 
       createGraphInternal();
     }
