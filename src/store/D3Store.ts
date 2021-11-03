@@ -11,12 +11,7 @@ export const store = {
 
   state: reactive<State>({
     svg: null,
-    nodes: null,
-    links: null,
-    texts: null,
     currentNode: null,
-    onClickCallback: null,
-    scale: 1,
     onNodeClickCallback: null,
     onSvgClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
@@ -25,10 +20,10 @@ export const store = {
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
       .create("svg")
-      .attr(
-        "viewBox",
-        `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
-      )
+      // .attr(
+      //   "viewBox",
+      //   `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
+      // )
       .style("background-color", "lightgrey")
       .attr("id", "svg")
       .on("click", () => {
@@ -36,20 +31,100 @@ export const store = {
           this.state.onSvgClickCallback();
       });
 
+      const zoomDisplay = d3.create("svg").append("svg")
+      .attr("height", 40)
+      .attr("width", 150)
+      // .style("background-color", "blue")
+      .attr("opacity", 1)
+      .attr("id","zoom-svg")
+
+
+
+      // zoomDisplay.raise()
+
+    
+
+
     div
       .append(() => this.state.svg!.node())
       .attr("width", Constants.content_width * 0.8)
       .attr("height", Constants.height);
+
+    const div2 = d3.select("#zoom").style("position", "absolute")
+
+    div2.append(() => zoomDisplay.node())
+
+    this.initializeZoomRect()
+
+
+
+      
+      
+    //   console.log(zoomDisplay);
+
   },
 
-  setOnClickCallback(onclkcallback: any) {
-    this.state.onClickCallback = onclkcallback;
+  initializeZoomRect(){
+
+    const zoomDisplay = d3.select("#zoom-svg")
+
+    zoomDisplay
+    .append("rect")
+    .attr("y",0)
+    .attr("x", 0)
+    .attr("fill", "rgba(50,50,50,0.2)")
+    .attr("width", 150)
+    .attr("height", 40)
+    .attr("opacity", 0.2)
+
+    zoomDisplay
+    .append("rect")
+    .attr("y",5)
+    .attr("x", 100)
+    .attr("ry",100)
+    .attr("rx", 100)
+    .attr("fill", "rgba(250,50,50,0.2)")
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("opacity", 0.9)
+    .on("click" ,(e : Event) => {
+      e.stopPropagation()
+      this.resetZoom();
+    })
+
+      zoomDisplay
+      .append("text")
+      .text("hello world")
+      .attr("y", 25)
+      .attr("x",10)
+      .attr("fill", "green")
+      .attr("text-anchor", "start")
+      .attr("stroke-opacity", 1)
   },
+
   setOnNodeClickCallback(onclkcallback: any) {
     this.state.onNodeClickCallback = onclkcallback;
   },
   setOnSvgClickCallback(onclkcallback: any) {
     this.state.onSvgClickCallback = onclkcallback;
+  },
+
+  resetZoom(){
+
+    const zoomf = d3.zoom()
+    const {k, x, y} = this.state.transform
+    
+    this.state.transform = d3.zoomIdentity
+
+    this.state.svg?.call(zoomf.transform as any, this.state.transform )
+
+    this.state.svg?.selectAll("circle").transition().duration(500).attr("transform", this.state.transform  as any);
+    this.state.svg?.selectAll("text").transition().duration(500).attr("transform", this.state.transform  as any);
+    this.state.svg?.selectAll("line").transition().duration(500).attr("transform", this.state.transform  as any);
+    d3.select("#zoom-svg").select("text").transition().duration(2500)
+    .text(`zoom : 1.00`)
+    
+ 
   },
 
   createGraph() {
@@ -201,8 +276,8 @@ export const store = {
     function dragged(e: any, d: any) {
       //update current info model
       //times the difference between mouse events with the current scale of the zoom the add it t the current position to get the new position
-      d.x += (e.dx * 1) / st.scale!;
-      d.y += (e.dy * 1) / st.scale!;
+      d.x += (e.dx * 1) / st.transform.k;
+      d.y += (e.dy * 1) / st.transform.k;
 
       //update the visual node on graph
       st.currentNode!.attr("cx", d.x).attr("cy", d.y);
@@ -260,8 +335,10 @@ export const store = {
 
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
-      st.scale = transform.k;
       st.transform = transform;
+
+      d3.select("#zoom-svg").select("text").text(`zoom : ${st.transform.k.toFixed(2)}`)
+
 
       st.svg?.selectAll("circle").attr("transform", transform as any);
       st.svg?.selectAll("text").attr("transform", transform as any);
@@ -307,23 +384,9 @@ function createGraphInternal() {
 
 interface State {
   svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
-  nodes: d3.Selection<
-    SVGCircleElement,
-    NodeModel,
-    SVGSVGElement,
-    undefined
-  > | null;
-  links: d3.Selection<SVGLineElement, any, SVGSVGElement, undefined> | null;
-  texts: d3.Selection<
-    SVGTextElement,
-    NodeModel,
-    SVGSVGElement,
-    undefined
-  > | null;
+ 
   currentNode: d3.Selection<any, unknown, null, undefined> | null;
-  onClickCallback: any | null;
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
-  scale: number;
   transform: d3.ZoomTransform;
 }
