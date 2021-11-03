@@ -36,6 +36,30 @@ export const store = {
           this.state.onSvgClickCallback();
       });
 
+      const zoomDisplay = d3.create("svg")
+      // .attr(
+      //   "viewBox",
+      //   `0 ${Constants.height - 250} ${Constants.content_width * 0.8} 150`
+      // )
+      .style("background-color", "green")
+      .attr("id", "zoom-svg")
+      .attr("height", 50)
+      .attr("width", 150)
+      .attr("x", 150)
+      .attr("y", 150).raise()
+      .append("rect")
+      .attr("y", 50)
+      .attr("x", 50)
+      .attr("fill", "red")
+      .attr("width", 50)
+      .attr("height", 50)
+      
+      
+      console.log(zoomDisplay);
+
+      this.state.svg.append(() => zoomDisplay.node())
+
+
     div
       .append(() => this.state.svg!.node())
       .attr("width", Constants.content_width * 0.8)
