@@ -36,13 +36,11 @@ export const store = {
           this.state.onSvgClickCallback();
       });
 
-      const zoomwidth = 200
-      const zoomDisplay = d3.create("svg").attr("x", 0)
-      .style("background-color", "blue")
-      .style("position", "absolute")
+      const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 50)
       .attr("width", Constants.content_width - Constants.width)
       .attr("opacity", .5)
+      .attr("id","zoom-svg")
 
 
       // zoomDisplay.raise()
@@ -60,25 +58,38 @@ export const store = {
     div2.append(() => zoomDisplay.node())
 
 
-      zoomDisplay
-      .append("rect")
-      .attr("y",0)
-      .attr("x", 0)
-      .attr("fill", "red")
-      .attr("width", zoomwidth)
-      .attr("height", 50)
-      .attr("opacity", 0.9)
+    zoomDisplay
+    .append("rect")
+    .attr("y",0)
+    .attr("x", 0)
+    .attr("fill", "rgba(50,50,50,0.2)")
+    .attr("width", 200)
+    .attr("height", 50)
+    .attr("opacity", 0.9)
 
-
+    zoomDisplay
+    .append("rect")
+    .attr("y",10)
+    .attr("x", 100)
+    .attr("ry",100)
+    .attr("rx", 100)
+    .attr("fill", "rgba(250,50,50,0.2)")
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("opacity", 0.9)
+    .on("click" ,(e : Event) => {
+      e.stopPropagation()
+      this.resetZoom();
+    })
 
       zoomDisplay
       .append("text")
+      .text("hello world")
       .attr("dy", 30)
       .attr("x",10)
-      .attr("fill", "red")
-      .text("hello world")
+      .attr("fill", "green")
       .attr("text-anchor", "start")
-      .attr("stroke-opacity", 0.7)
+      .attr("stroke-opacity", 1)
 
       
       
@@ -94,6 +105,22 @@ export const store = {
   },
   setOnSvgClickCallback(onclkcallback: any) {
     this.state.onSvgClickCallback = onclkcallback;
+  },
+
+  resetZoom(){
+
+    const zoomf = d3.zoom()
+
+    this.state.svg?.call(zoomf.transform as any, d3.zoomIdentity)
+
+    this.state.svg?.selectAll("circle").transition().duration(500).attr("transform", d3.zoomIdentity as any);
+    this.state.svg?.selectAll("text").transition().duration(500).attr("transform", d3.zoomIdentity as any);
+    this.state.svg?.selectAll("line").transition().duration(500).attr("transform", d3.zoomIdentity as any);
+    d3.select("#zoom-svg").select("text").transition().duration(500)
+    .text(`zoom : 1.00`)
+    
+    this.state.transform = new d3.ZoomTransform(1, this.state.transform.x, this.state.transform.y)
+ 
   },
 
   createGraph() {
@@ -307,8 +334,7 @@ export const store = {
       st.scale = transform.k;
       st.transform = transform;
 
-      d3.select("#zoom").text(`zoom : ${st.scale.toFixed(2)}`)
-      .attr("fill", "red")
+      d3.select("#zoom-svg").select("text").text(`zoom : ${st.transform.k.toFixed(2)}`)
 
 
       st.svg?.selectAll("circle").attr("transform", transform as any);
