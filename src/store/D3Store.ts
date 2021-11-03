@@ -1,6 +1,6 @@
 import NodeModel from "@/models/node";
 import { reactive } from "@vue/runtime-core";
-import Constants from "./ConstantsStore";
+import C from "./ConstantsStore";
 import * as d3 from "d3";
 import { store as datastore } from "./DataStoreage";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
@@ -22,9 +22,9 @@ export const store = {
       .create("svg")
       // .attr(
       //   "viewBox",
-      //   `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
+      //   `0 0 ${C.content_width * 0.8} ${C.height}`
       // )
-      .style("background-color", "lightgrey")
+      .style("background-color", "rgba(240,240,240,1.0)")
       .attr("id", "svg")
       .on("click", () => {
         if (this.state.onSvgClickCallback != null)
@@ -39,28 +39,16 @@ export const store = {
       .attr("id","zoom-svg")
 
 
-
-      // zoomDisplay.raise()
-
-    
-
-
     div
       .append(() => this.state.svg!.node())
-      .attr("width", Constants.content_width * 0.8)
-      .attr("height", Constants.height);
+      .attr("width", C.content_width * 0.8)
+      .attr("height", C.height);
 
     const div2 = d3.select("#zoom").style("position", "absolute")
 
     div2.append(() => zoomDisplay.node())
 
     this.initializeZoomRect()
-
-
-
-      
-      
-    //   console.log(zoomDisplay);
 
   },
 
@@ -121,6 +109,8 @@ export const store = {
     this.state.svg?.selectAll("circle").transition().duration(500).attr("transform", this.state.transform  as any);
     this.state.svg?.selectAll("text").transition().duration(500).attr("transform", this.state.transform  as any);
     this.state.svg?.selectAll("line").transition().duration(500).attr("transform", this.state.transform  as any);
+  this.state.svg?.selectAll("image").transition().duration(500).attr("transform", this.state.transform.translate(-C.radius/2, -C.radius/2) as any);
+
     d3.select("#zoom-svg").select("text").transition().duration(2500)
     .text(`zoom : 1.00`)
     
@@ -128,8 +118,11 @@ export const store = {
   },
 
   createGraph() {
+    console.log("creating graph");
+    
     this.createLine();
     this.createCircles();
+    this.createImages();
     this.createText();
     this.initializeDrag();
     this.initializeZoom();
@@ -137,20 +130,53 @@ export const store = {
     this.state.svg?.selectAll("circle").raise();
   },
 
+  createImages(){
+    const nodes = this.state.svg
+    ?.selectAll<any, NodeModel>("g")
+    .data<NodeModel>(datastore.state.nodes.values())
+
+
+    //create images 
+    nodes?.join(
+      enter => enter 
+      .append("svg:image")
+      .attr("href", ()=>{
+        const imgPath = "./assets/svg/app.svg"
+        return imgPath
+      })
+      .attr("id", d => `image-${d.id}`)
+      .attr("x", d => d.x)
+      .attr("y", d => d.y)
+      .attr("transform", `translate(${-C.radius/2}, ${-C.radius/2})`)
+      .attr("width", C.radius)
+      .attr("height", C.radius)
+          .on("click", (e: Event, d) => null)
+          .transition()
+          .duration(750)
+          // .attr("transform", this.state.transform as any)
+          .attr("opacity", 1)
+          .attr("r", C.radius)
+          
+          ,
+      (update) => update.transition().duration(750)
+    )
+  },
+
   createCircles() {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     const nodes = this.state.svg
-      ?.selectAll<SVGCircleElement, unknown>("circle")
-      .data(datastore.state.nodes.values());
+      ?.selectAll<any, NodeModel>("g")
+      .data<NodeModel>(datastore.state.nodes.values())
 
+      
+    //create circles
     nodes?.join(
-      (enter) =>
-        enter
-          .append("circle")
+      enter => enter 
+      .append("circle")
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
-          .attr("fill", (d) => color(d.name))
+          .attr("fill", (d) => "rgba(0,0,0,.02)")
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
@@ -161,15 +187,16 @@ export const store = {
           .duration(750)
           // .attr("transform", this.state.transform as any)
           .attr("opacity", 1)
-          .attr("r", Constants.radius),
+          .attr("r", C.radius)
+          
+          ,
       (update) => update.transition().duration(750)
-    );
+    )
+
+
   },
   createLine() {
     const lineData = datastore.getLinks();
-
-    console.log(lineData);
-
     const lines = this.state.svg
       ?.selectAll<SVGLineElement, { source: NodeModel; target: NodeModel }>(
         "line"
@@ -178,25 +205,27 @@ export const store = {
 
     const markers = this.state.svg?.append("defs").append("marker");
     const markerSize = 14;
+    const color = "rgba(40,100,200, .8)"
     markers
       ?.attr("viewBox", "0 -5 10 10")
       .attr("id", "arrow")
-      .attr("refX", Constants.radius - markerSize - 3)
+      .attr("refX", C.radius - markerSize)
       .attr("refY", 0)
-      .attr("markerWidth", markerSize / 2)
-      .attr("markerHeight", markerSize / 2)
+      .attr("markerWidth", markerSize / 3)
+      .attr("markerHeight", markerSize / 3)
       .attr("orient", "auto")
       .append("path")
       .attr("d", "M0,-5L10,0L0,5")
       .attr("class", "arrowHead")
-      .attr("fill", "red")
+      .attr("fill", color)
+      .attr("opacity", .9)
       .attr("stroke-width", 2);
 
     lines?.join(
       (enter) =>
         enter
           .append("line")
-          .style("stroke", "rgb(40,100,200)")
+          .style("stroke", "transparent")
           .attr("stroke-opacity", 1)
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
@@ -205,10 +234,14 @@ export const store = {
           .attr("y2", (d) => d.source.y)
           .attr("marker-end", "url(#arrow)")
           .transition()
-          .duration(1750)
+          .duration(1500)
           .attr("stroke-width", 3)
           .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y),
+          .attr("y2", (d) => d.target.y)
+          .transition()
+          .duration(500)
+          .style("stroke", color)
+          ,
       (update) =>
         update
           .transition("exit line")
@@ -216,7 +249,7 @@ export const store = {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y)
           .attr("stroke-width", 3)
-          .style("stroke", "rgb(140,100,200)"),
+          ,
       (exit) =>
         exit
           .transition()
@@ -240,7 +273,7 @@ export const store = {
           .append("text")
           .text((d) => d.name)
           .attr("x", (d) => d.x)
-          .attr("y", (d) => d.y + Constants.radius * 1.5)
+          .attr("y", (d) => C.textOffset(d.y))
           .attr("id", (d) => `text-${d.id}`)
           .attr("text-anchor", "middle")
           .attr("fill", "transparent")
@@ -274,13 +307,17 @@ export const store = {
     }
 
     function dragged(e: any, d: any) {
+
       //update current info model
       //times the difference between mouse events with the current scale of the zoom the add it t the current position to get the new position
       d.x += (e.dx * 1) / st.transform.k;
-      d.y += (e.dy * 1) / st.transform.k;
+      d.y += (e.dy * 1) / st.transform.k;      
 
       //update the visual node on graph
       st.currentNode!.attr("cx", d.x).attr("cy", d.y);
+
+      //update image position 
+      st.svg?.select(`#image-${d.id}`).attr("x", d.x ).attr("y", d.y)
 
       //get lines and update them from infomodel
       st.svg
@@ -300,14 +337,11 @@ export const store = {
           return d.target.y;
         });
 
-      // get the parent of the current node wich is the svg - could also call the svg instead of parent
-      const parent = d3.select(st.currentNode!.node().parentNode);
-
       //update the text positions with y offset
-      parent
-        .select(`#text-${d.id}`)
+        st.svg!
+        .select<any>(`#text-${d.id}`)
         .attr("x", d.x)
-        .attr("y", d.y + 75);
+        .attr("y", (d : any) => C.textOffset(d.y));
     }
 
     function dragended(e: any, d: any) {
@@ -323,12 +357,12 @@ export const store = {
       .scaleExtent([0.2, 3])
       .on("zoom", (t) => zoomed(t));
 
-    const k = Constants.height / Constants.content_width;
-    const x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, Constants.width]);
+    const k = C.height / C.content_width;
+    const x = d3.scaleLinear().domain([-4.5, 4.5]).range([0, C.width]);
     const y = d3
       .scaleLinear()
       .domain([-4.5 * k, 4.5 * k])
-      .range([Constants.height, 0]);
+      .range([C.height, 0]);
 
     function zoomed({ transform }: { transform: d3.ZoomTransform }) {
       console.log("called");
@@ -343,6 +377,7 @@ export const store = {
       st.svg?.selectAll("circle").attr("transform", transform as any);
       st.svg?.selectAll("text").attr("transform", transform as any);
       st.svg?.selectAll("line").attr("transform", transform as any);
+      st.svg?.selectAll("image").attr("transform", transform.translate(-C.radius/2, -C.radius/2) as any);
     }
 
     // apply zoom
