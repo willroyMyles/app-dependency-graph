@@ -25,10 +25,10 @@ export const store = {
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
       .create("svg")
-      .attr(
-        "viewBox",
-        `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
-      )
+      // .attr(
+      //   "viewBox",
+      //   `0 0 ${Constants.content_width * 0.8} ${Constants.height}`
+      // )
       .style("background-color", "lightgrey")
       .attr("id", "svg")
       .on("click", () => {
@@ -36,34 +36,54 @@ export const store = {
           this.state.onSvgClickCallback();
       });
 
-      const zoomDisplay = d3.create("svg")
-      // .attr(
-      //   "viewBox",
-      //   `0 ${Constants.height - 250} ${Constants.content_width * 0.8} 150`
-      // )
-      .style("background-color", "green")
-      .attr("id", "zoom-svg")
+      const zoomwidth = 200
+      const zoomDisplay = d3.create("svg").attr("x", 0)
+      .style("background-color", "blue")
+      .style("position", "absolute")
       .attr("height", 50)
-      .attr("width", 150)
-      .attr("x", 150)
-      .attr("y", 150).raise()
-      .append("rect")
-      .attr("y", 50)
-      .attr("x", 50)
-      .attr("fill", "red")
-      .attr("width", 50)
-      .attr("height", 50)
-      
-      
-      console.log(zoomDisplay);
+      .attr("width", Constants.content_width - Constants.width)
+      .attr("opacity", .5)
 
-      this.state.svg.append(() => zoomDisplay.node())
+
+      // zoomDisplay.raise()
+
+    
 
 
     div
       .append(() => this.state.svg!.node())
       .attr("width", Constants.content_width * 0.8)
       .attr("height", Constants.height);
+
+    const div2 = d3.select("#zoom").style("position", "absolute")
+
+    div2.append(() => zoomDisplay.node())
+
+
+      zoomDisplay
+      .append("rect")
+      .attr("y",0)
+      .attr("x", 0)
+      .attr("fill", "red")
+      .attr("width", zoomwidth)
+      .attr("height", 50)
+      .attr("opacity", 0.9)
+
+
+
+      zoomDisplay
+      .append("text")
+      .attr("dy", 30)
+      .attr("x",10)
+      .attr("fill", "red")
+      .text("hello world")
+      .attr("text-anchor", "start")
+      .attr("stroke-opacity", 0.7)
+
+      
+      
+    //   console.log(zoomDisplay);
+
   },
 
   setOnClickCallback(onclkcallback: any) {
@@ -286,6 +306,10 @@ export const store = {
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
       st.scale = transform.k;
       st.transform = transform;
+
+      d3.select("#zoom").text(`zoom : ${st.scale.toFixed(2)}`)
+      .attr("fill", "red")
+
 
       st.svg?.selectAll("circle").attr("transform", transform as any);
       st.svg?.selectAll("text").attr("transform", transform as any);

@@ -1,4 +1,5 @@
 <template>
+
   <v-col id="nodes" />
 </template>
 
@@ -86,4 +87,5 @@ export default defineComponent({
 .link {
   fill: none;
 }
+
 </style>

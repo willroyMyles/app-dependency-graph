@@ -4,6 +4,9 @@
     <a-layout-content>
       <Content />
     </a-layout-content>
+      <div id="zoom" class="zoom">
+        {{}}
+  </div>
     <a-layout-sider :width="width" height="100%"  style="background : white">
       <div v-if="node != null">
         <div>
@@ -39,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRefs } from 'vue';
+import { computed, defineComponent, reactive, ref, toRefs } from 'vue';
 import Content from './components/content/content.vue'
 import NodeModel from './models/node';
 import ConstantsStore from './store/ConstantsStore';
@@ -52,11 +55,13 @@ export default defineComponent({
     Content,
     ConfigView
   },
+
   setup(){
 
     const state = reactive({
       node : null as NodeModel | null,
     })
+
 
     const updateNode = ref()
 
@@ -100,5 +105,16 @@ export default defineComponent({
   background: #fff;
   color: red;
   background-color: red;
+}
+
+
+.zoom {
+  width: 100;
+  height: 100;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1000;
+  
 }
 </style>
