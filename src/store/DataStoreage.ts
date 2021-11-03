@@ -1,4 +1,5 @@
-import NodeType from "@/enums/NodeEnum";
+import NodeType, { SubEnum } from "@/enums/NodeEnum";
+import DatabaseModel from "@/models/databaseModel";
 import NodeModel from "@/models/node";
 import ServiceModel from "@/models/ServiceModel";
 import { reactive } from "@vue/runtime-core";
@@ -74,10 +75,19 @@ export const store ={
     },
 
     updateNode(node : NodeModel){
-      this.state.nodes.set(node.id, node)
+      let n : NodeModel | null= null;
+      if(node.type.value == NodeType.DATABASE.value) n = new DatabaseModel(node.name, node)
+      if(node.type.value == NodeType.SERVICE.value) n = new ServiceModel(node.name, node)
+      console.log(n);
+      
+      this.state.nodes.set(n!.id, n!)
       d3store.createGraph();
       // should update graph
-    }
+    },
+
+    // changeType(node : NodeModel){
+    //   return node as DatabaseModel
+    // }
 }
 
 export interface Links{

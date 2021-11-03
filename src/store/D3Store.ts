@@ -31,6 +31,8 @@ export const store = {
           this.state.onSvgClickCallback();
       });
 
+      this.onDoubleClick(null)
+
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
       .attr("width", 150)
