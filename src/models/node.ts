@@ -11,11 +11,13 @@ export default class NodeModel {
     type : SubEnum
     tags : string[]
     
-    constructor(name = "random"){
-        this.x = 0.0;
-        this.y = 0.0;
-        this.name = name;
-        this.type = NodeType.SERVICE;
-        this.tags = []
+    constructor(name = "random", node?:NodeModel){
+        this.x = node?.x  ||   0.0;
+        this.y = node?.y  ||   0.0;
+        this.name = node?.name  ||   name;
+        this.type = node?.type  ||   NodeType.SERVICE;
+        this.tags = node?.tags  ||   []
     }
+
+
 }

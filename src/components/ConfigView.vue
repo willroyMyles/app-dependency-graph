@@ -21,9 +21,16 @@
                 <span v-if=" property[1] instanceof Array">
                     <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
-                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
+                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="no connections" :value="node[property[0]]">
                         <a-select-option v-for="val in datastore.state.nodes.values()" :key="val.id" :value="val.id" >
                             {{val.name}}
+                        </a-select-option>
+                    </a-select>
+                    </div>
+                <div v-if="property[0] == 'tags'">
+                    <a-select mode="tags" style="width: 100px" v-on:change="handleTags" placeholder="no tags..." :value="node[property[0]]">
+                        <a-select-option v-for="val in datastore.state.tags" :key="val" :value="val" >
+                            {{val}}
                         </a-select-option>
                     </a-select>
                     </div>
@@ -78,9 +85,11 @@ export default defineComponent({
         }
 
         function handleConnections(d:any){
-            
-
             (state.node as ServiceModel).connections = d         
+        }
+
+        function handleTags(d:string[]){
+            state.node.tags = d      
         }
 
         return {
@@ -90,6 +99,7 @@ export default defineComponent({
             updateNode,
             updateType,
             handleConnections,
+            handleTags,
             datastore : store
 
         }

@@ -38,7 +38,7 @@ export const store ={
         this.createConnection(esif.id, rs.id);
         this.createConnection(wa.id, esif.id);
 
-        this.state.tags = new Set(this.getTags())
+        this.getTags()
   
         // (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[2].id);
         // (this.state.nodes[0] as ServiceModel).connections.push(this.state.nodes[2].id);
@@ -100,13 +100,13 @@ export const store ={
           _tags.push(linksInArray)
       })
     
+      this.state.tags = new Set(_tags.flat())
       return _tags.flat();
     },
 
     updateNode(node : NodeModel) : NodeModel{
-      const original = this.state.nodes.get(node.id)
-      // if types are the same update else create new node with base props
-
+        console.log(node.tags);
+        
 
         let n : NodeModel | null= null;
         if(node.type.isDatabase()) n = new DatabaseModel(node.name, node)
