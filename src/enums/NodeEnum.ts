@@ -1,6 +1,8 @@
 import {Enumify} from 'enumify-ts'
 export class SubEnum{
     value : string ;
+    isDatabase = () => this.value == "DATABASE"
+    isService = () => this.value == "SERVICE"
 
     constructor(val : string){
         this.value = val;

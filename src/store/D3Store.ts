@@ -15,6 +15,10 @@ export const store = {
     onNodeClickCallback: null,
     onSvgClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
+    images : {
+      app : new Image().src = "./assets/svg/app.svg",
+      db : new Image().src = "./asstes/svg/db.svg",
+    }
   }),
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
@@ -30,6 +34,8 @@ export const store = {
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
       });
+
+      this.onDoubleClick(null)
 
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
@@ -117,9 +123,7 @@ export const store = {
  
   },
 
-  createGraph() {
-    console.log("creating graph");
-    
+  createGraph() {    
     this.createLine();
     this.createCircles();
     this.createImages();
@@ -130,18 +134,21 @@ export const store = {
     this.state.svg?.selectAll("circle").raise();
   },
 
-  createImages(){
+  async createImages(){
     const nodes = this.state.svg
-    ?.selectAll<any, NodeModel>("g")
+    ?.selectAll<any, NodeModel>("image")
     .data<NodeModel>(datastore.state.nodes.values())
 
 
+    // #### images have to be in public folder in path
     //create images 
     nodes?.join(
       enter => enter 
-      .append("svg:image")
-      .attr("href", ()=>{
-        const imgPath = "./assets/svg/app.svg"
+      .append("image")
+      .attr("href", (d) =>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
       .attr("id", d => `image-${d.id}`)
@@ -158,7 +165,19 @@ export const store = {
           .attr("r", C.radius)
           
           ,
-      (update) => update.transition().duration(750)
+      (update) => update
+      . transition().duration(750)
+
+    //  . attr("opacity", 0.0)
+     . transition().duration(750)
+      .attr("href", (d) =>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
+        return imgPath
+      })
+     . attr("opacity", 1.0)
+
     )
   },
 
@@ -166,8 +185,8 @@ export const store = {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     const nodes = this.state.svg
-      ?.selectAll<any, NodeModel>("g")
-      .data<NodeModel>(datastore.state.nodes.values())
+      ?.selectAll<any, NodeModel>("circle")
+      .data<NodeModel>(datastore.state.nodes.values(), d => `circle-${d.id}`)
 
       
     //create circles
@@ -177,6 +196,7 @@ export const store = {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("fill", (d) => "rgba(0,0,0,.02)")
+          
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
@@ -365,8 +385,6 @@ export const store = {
       .range([C.height, 0]);
 
     function zoomed({ transform }: { transform: d3.ZoomTransform }) {
-      console.log("called");
-
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
       st.transform = transform;
@@ -393,7 +411,6 @@ export const store = {
   },
 
   onDoubleClick(callback: any) {
-    console.log("hdclick");
     this.state.svg!.on("dblclick", handleDoubleClick);
     const st = this.state;
     
@@ -425,4 +442,8 @@ interface State {
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
   transform: d3.ZoomTransform;
+  images : {
+    app : any
+    db : any
+  }
 }
