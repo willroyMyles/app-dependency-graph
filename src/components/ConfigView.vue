@@ -68,28 +68,20 @@ export default defineComponent({
         }
 
         const updateNode = () =>{
-            console.log(state.node)
            const n =  store.updateNode(state.node);
            state.node = new NodeModel()
            state.node = n
         }
 
         function updateType(val : any){
-            console.log(val)
             state.node.type = NodeType.valueOf(val)!
-            console.log(state.node.type)
         }
 
         function handleConnections(d:any){
             
 
             (state.node as ServiceModel).connections = d         
-            console.log(d)   
         }
-
-        onMounted(()=>{
-            console.log(props.nodeProp)
-        })
 
         return {
             ...toRefs(props),

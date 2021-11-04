@@ -8,10 +8,7 @@ export default class ServiceModel extends NodeModel{
     connections : string[] = [];
 
     constructor(name?:string, node?:NodeModel){
-        super(name)
-
-        console.log(node);
-        
+        super(name)        
         if(node){
             this.id = node.id
             this.name = node.name

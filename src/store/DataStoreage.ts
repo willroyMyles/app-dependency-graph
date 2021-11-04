@@ -43,7 +43,6 @@ export const store ={
       },
 
     addNode(node : NodeModel){
-      console.log("node added", node);
       this.state.nodes.set(node.id, node)
     },
 

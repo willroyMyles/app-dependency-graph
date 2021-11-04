@@ -123,9 +123,7 @@ export const store = {
  
   },
 
-  createGraph() {
-    console.log("creating graph");
-    
+  createGraph() {    
     this.createLine();
     this.createCircles();
     this.createImages();
@@ -387,8 +385,6 @@ export const store = {
       .range([C.height, 0]);
 
     function zoomed({ transform }: { transform: d3.ZoomTransform }) {
-      console.log("called");
-
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
       st.transform = transform;
@@ -415,7 +411,6 @@ export const store = {
   },
 
   onDoubleClick(callback: any) {
-    console.log("hdclick");
     this.state.svg!.on("dblclick", handleDoubleClick);
     const st = this.state;
 
