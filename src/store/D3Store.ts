@@ -134,14 +134,14 @@ export const store = {
 
   createImages(){
     const nodes = this.state.svg
-    ?.selectAll<any, NodeModel>("g")
+    ?.selectAll<any, NodeModel>("image")
     .data<NodeModel>(datastore.state.nodes.values())
 
 
     //create images 
     nodes?.join(
       enter => enter 
-      .append("svg:image")
+      .append("image")
       .attr("href", ()=>{
         const imgPath = "./assets/svg/app.svg"
         return imgPath
@@ -160,7 +160,7 @@ export const store = {
           .attr("r", C.radius)
           
           ,
-      (update) => update.transition().duration(750)
+      (update) => update.transition().duration(750).attr("fill", "black")
     )
   },
 
@@ -168,8 +168,8 @@ export const store = {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     const nodes = this.state.svg
-      ?.selectAll<any, NodeModel>("g")
-      .data<NodeModel>(datastore.state.nodes.values())
+      ?.selectAll<any, NodeModel>("circle")
+      .data<NodeModel>(datastore.state.nodes.values(), d => `circle-${d.id}`)
 
       
     //create circles
@@ -179,6 +179,7 @@ export const store = {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("fill", (d) => "rgba(0,0,0,.02)")
+          
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
