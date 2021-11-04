@@ -6,6 +6,9 @@
     </a-layout-content>
     <div id="zoom" class="zoom">{{}}</div>
     <a-layout-sider :width="width" height="100%" style="background: white">
+      <div v-if="node == null">
+        <SideBarMenu />
+      </div>
       <div v-if="node != null">
         <div>
           <span>{{ node.name }} configuration</span>
@@ -43,12 +46,14 @@ import NodeModel from "./models/node";
 import ConstantsStore from "./store/ConstantsStore";
 import ConfigView from "./components/ConfigView.vue";
 import { store as d3Store } from "./store/D3Store";
+import SideBarMenu from './components/SideBarMenu.vue'
 
 export default defineComponent({
   name: "App",
   components: {
     Content,
     ConfigView,
+    SideBarMenu
   },
 
   setup() {
