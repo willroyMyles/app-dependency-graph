@@ -16,6 +16,11 @@ export default class DatabaseModel extends NodeModel{
             this.name = node.name
             this.x = node.x
             this.y = node.y
+
+            if(node.type.isDatabase()){
+                this.address = (node as DatabaseModel).address
+                this.connectionString = (node as DatabaseModel).connectionString
+            }
         }
     }
 

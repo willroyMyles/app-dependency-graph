@@ -167,13 +167,19 @@ export const store = {
           .attr("r", C.radius)
           
           ,
-      (update) => update.transition().duration(750).attr("fill", "black")
+      (update) => update
+      . transition().duration(750)
+
+    //  . attr("opacity", 0.0)
+     . transition().duration(750)
       .attr("href", (d) =>{
         let imgPath = "./assets/svg/app.svg"
         if(d.type.isService()) imgPath = "./assets/svg/app.svg"
         if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
+     . attr("opacity", 1.0)
+
     )
   },
 
