@@ -12,6 +12,7 @@ export default class NodeModel {
     tags : string[]
     
     constructor(name = "random", node?:NodeModel){
+        this.id = node?.id  ||   uuid.v4();
         this.x = node?.x  ||   0.0;
         this.y = node?.y  ||   0.0;
         this.name = node?.name  ||   name;
