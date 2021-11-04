@@ -142,8 +142,12 @@ export const store = {
     nodes?.join(
       enter => enter 
       .append("image")
-      .attr("href", ()=>{
-        const imgPath = "./assets/svg/app.svg"
+      .attr("href", (d)=>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+
+        console.log(d.type.isService());
+        
         return imgPath
       })
       .attr("id", d => `image-${d.id}`)
