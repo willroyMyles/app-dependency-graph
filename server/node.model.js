@@ -8,16 +8,16 @@ const nodeSchema = new Schema(
     name : String,
     x : Number,
     y : Number,
-    type : String,
+    type : {value: String},
     ipAddresses: [{name : String, ipAddress : String, hostName : String}],
     connections: [{type : String}]
   },
   {
-    collection: 'todoes',
+    collection: 'nodes',
     read: 'nearest'
   }
 );
 
-const Node = mongoose.model('Node', todoSchema);
+const Node = mongoose.model('Node', nodeSchema);
 
 module.exports = Node;

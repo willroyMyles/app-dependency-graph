@@ -396,9 +396,10 @@ export const store = {
     console.log("hdclick");
     this.state.svg!.on("dblclick", handleDoubleClick);
     const st = this.state;
-
+    
     function handleDoubleClick(e: any, i: any) {
       const t = st.transform.invert([e.x, e.y]);
+      console.log("hdclick2");
 
       //create new node
       const node = new ServiceModel();

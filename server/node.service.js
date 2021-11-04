@@ -7,13 +7,19 @@ function getNodes(req, res) {
   const docquery = Node.find({}).read(ReadPreference.NEAREST);
   docquery
     .exec()
-    .then(nodes => res.status(200).json(nodes))
-    .catch(error => res.status(500).send(error));
+    .then(nodes => {
+      res.status(200).json(nodes);
+      console.log("NODES: " + nodes);
+    })
+    .catch(error => {
+      res.status(500).send(error);
+      console.log("ERROR: " + error);
+    });
 }
 
 function saveNode(req, res) {
-
   const node = new Node(req.body.node);
+  console.log("New node: " + node);
   node.save(error => {
     if (checkServerError(res, error)) return;
     res.status(201).json(node);
@@ -48,6 +54,7 @@ function deleteNode(req, res) {
 }
 
 function checkServerError(res, error) {
+  console.log("Error: " + error);
   if (error) {
     res.status(500).send(error);
     return error;
