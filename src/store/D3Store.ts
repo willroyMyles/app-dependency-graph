@@ -15,6 +15,10 @@ export const store = {
     onNodeClickCallback: null,
     onSvgClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
+    images : {
+      app : new Image().src = "./assets/svg/app.svg",
+      db : new Image().src = "./asstes/svg/db.svg",
+    }
   }),
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
@@ -132,22 +136,21 @@ export const store = {
     this.state.svg?.selectAll("circle").raise();
   },
 
-  createImages(){
+  async createImages(){
     const nodes = this.state.svg
     ?.selectAll<any, NodeModel>("image")
     .data<NodeModel>(datastore.state.nodes.values())
 
 
+    // #### images have to be in public folder in path
     //create images 
     nodes?.join(
       enter => enter 
       .append("image")
-      .attr("href", (d)=>{
+      .attr("href", (d) =>{
         let imgPath = "./assets/svg/app.svg"
         if(d.type.isService()) imgPath = "./assets/svg/app.svg"
-
-        console.log(d.type.isService());
-        
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
       .attr("id", d => `image-${d.id}`)
@@ -165,6 +168,12 @@ export const store = {
           
           ,
       (update) => update.transition().duration(750).attr("fill", "black")
+      .attr("href", (d) =>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
+        return imgPath
+      })
     )
   },
 
@@ -431,4 +440,8 @@ interface State {
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
   transform: d3.ZoomTransform;
+  images : {
+    app : any
+    db : any
+  }
 }

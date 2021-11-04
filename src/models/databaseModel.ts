@@ -1,4 +1,4 @@
-import  NodeType  from "@/enums/NodeEnum"; 
+import NodeType from "@/enums/NodeEnum"; 
 import NodeModel from "./node";
 
 export default class DatabaseModel extends NodeModel{
