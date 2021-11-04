@@ -424,7 +424,7 @@ export const store = {
       node.y = t[1];
 
       //add node to list
-      datastore.addNode(node);
+      datastore.saveNode(node);
 
       createGraphInternal();
     }

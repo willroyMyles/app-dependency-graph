@@ -48,13 +48,17 @@ export const store ={
         // (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[0].id);
         setTimeout(() => {
           d3store.createGraph()
-        },1000);
+        },3000);
       },
 
     addNode(node : NodeModel){
       console.log("addNode");
-      nodeService.addNode(node);
       this.state.nodes.set(node.id, node)
+    },
+
+    saveNode(node : NodeModel) {
+      nodeService.addNode(node);
+      this.addNode(node);
     },
 
     createConnection(sourceId : string, targetId : string){
