@@ -10,7 +10,7 @@ import {store as d3store} from './D3Store'
 export const store ={
     state : reactive({
         nodes: new Map<string, NodeModel>(),
-        tags : [] as string[],
+        tags : new Set<string>(),
         currentObjectNode : null as NodeModel | null
     }),
 
@@ -38,7 +38,7 @@ export const store ={
         this.createConnection(esif.id, rs.id);
         this.createConnection(wa.id, esif.id);
 
-        this.state.tags = this.getTags()
+        this.state.tags = new Set(this.getTags())
   
         // (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[2].id);
         // (this.state.nodes[0] as ServiceModel).connections.push(this.state.nodes[2].id);
@@ -47,6 +47,16 @@ export const store ={
 
     addNode(node : NodeModel){
       this.state.nodes.set(node.id, node)
+      this.addTags(node.tags)
+    },
+
+    addTag(tag : string){
+      if(!this.state.tags.has(tag))
+      this.state.tags.add(tag)
+    },
+
+    addTags(tags : string[]){
+      tags.map((tag) => this.addTag(tag))
     },
 
     createConnection(sourceId : string, targetId : string){
