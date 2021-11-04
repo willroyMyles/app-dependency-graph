@@ -82,6 +82,7 @@ export const store ={
     getLinks() : Array<Links>{
       const link : Links[][] = [];
       this.state.nodes.forEach((node, key) => {
+        node.type = new SubEnum(node.type.value);
         if(node.type.isService()){
           console.log(node);
           
