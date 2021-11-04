@@ -28,7 +28,7 @@
             zIndex: 1,
           }"
         >
-          <a-button :style="{ marginRight: '8px' }" @click="onDeselect">
+          <a-button :style="{ marginRight: '8px' }" >
             Cancel
           </a-button>
           <a-button type="primary" @click="commit"> Commit </a-button>

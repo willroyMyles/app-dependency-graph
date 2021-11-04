@@ -10,6 +10,7 @@ import {store as d3store} from './D3Store'
 export const store ={
     state : reactive({
         nodes: new Map<string, NodeModel>(),
+        filtered: new Map<string, NodeModel>(),
         tags : new Set<string>(),
         currentObjectNode : null as NodeModel | null
     }),
@@ -27,8 +28,6 @@ export const store ={
         this.state.nodes.set(wa.id, wa)
         this.state.nodes.set(rs.id, rs)
   
- 
-
         this.state.nodes.forEach((v)=>{
           v.x = Math.random() * (width - radius * 2) + radius;
           v.y = Math.random() * (height - radius * 2) + radius;
@@ -39,10 +38,6 @@ export const store ={
         this.createConnection(wa.id, esif.id);
 
         this.getTags()
-  
-        // (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[2].id);
-        // (this.state.nodes[0] as ServiceModel).connections.push(this.state.nodes[2].id);
-        // (this.state.nodes[1] as ServiceModel).connections.push(this.state.nodes[0].id);
       },
 
     addNode(node : NodeModel){
@@ -57,6 +52,10 @@ export const store ={
 
     addTags(tags : string[]){
       tags.map((tag) => this.addTag(tag))
+    },
+
+    getNodes() : NodeModel[]  {
+      return Array.from(this.state.nodes.values())
     },
 
     createConnection(sourceId : string, targetId : string){
@@ -118,9 +117,13 @@ export const store ={
       // should update graph
     },
 
-    // changeType(node : NodeModel){
-    //   return node as DatabaseModel
-    // }
+    filterByTag(tag : string | null) {
+      if(tag){
+        this.state.filtered
+      }else{
+        this.state.filtered = this.state.nodes
+      }
+    }
 }
 
 export interface Links{
