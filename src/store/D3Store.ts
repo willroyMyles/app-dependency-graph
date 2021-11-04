@@ -413,9 +413,10 @@ export const store = {
   onDoubleClick(callback: any) {
     this.state.svg!.on("dblclick", handleDoubleClick);
     const st = this.state;
-
+    
     function handleDoubleClick(e: any, i: any) {
       const t = st.transform.invert([e.x, e.y]);
+      console.log("hdclick2");
 
       //create new node
       const node = new ServiceModel();
@@ -423,7 +424,7 @@ export const store = {
       node.y = t[1];
 
       //add node to list
-      datastore.addNode(node);
+      datastore.saveNode(node);
 
       createGraphInternal();
     }
