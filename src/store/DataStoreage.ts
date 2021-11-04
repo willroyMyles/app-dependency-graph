@@ -1,4 +1,5 @@
-import NodeType from "@/enums/NodeEnum";
+import NodeType, { SubEnum } from "@/enums/NodeEnum";
+import DatabaseModel from "@/models/databaseModel";
 import NodeModel from "@/models/node";
 import ServiceModel from "@/models/ServiceModel";
 import { reactive } from "@vue/runtime-core";
@@ -61,7 +62,9 @@ export const store ={
     getLinks() : Array<Links>{
       const link : Links[][] = [];
       this.state.nodes.forEach((node, key) => {
-        if(node.type.value == NodeType.SERVICE.value){
+        if(node.type.isService()){
+          console.log(node);
+          
           const linksInArray =  (node as ServiceModel).connections.map((connection, index) => <Links>{
             source : node,
             target: this.getNode(connection)
@@ -73,11 +76,24 @@ export const store ={
       return link.flat();
     },
 
-    updateNode(node : NodeModel){
-      this.state.nodes.set(node.id, node)
-      d3store.createGraph();
+    updateNode(node : NodeModel) : NodeModel{
+      const original = this.state.nodes.get(node.id)
+      // if types are the same update else create new node with base props
+
+
+        let n : NodeModel | null= null;
+        if(node.type.isDatabase()) n = new DatabaseModel(node.name, node)
+        if(node.type.isService()) n = new ServiceModel(node.name, node)
+        
+        this.addNode(n!)
+        d3store.createGraph();
+        return n!;
       // should update graph
-    }
+    },
+
+    // changeType(node : NodeModel){
+    //   return node as DatabaseModel
+    // }
 }
 
 export interface Links{

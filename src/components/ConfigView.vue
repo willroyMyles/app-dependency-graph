@@ -1,7 +1,7 @@
 
 <template>
 <div v-if="node != null">
-    <div v-for="property in Object.entries(node)" :key="property[0]">
+    <div v-for="property in Object.entries(node)" :key="property[0] + node.id">
         <a-row justify="space-between" class="prop-row" type="flex">
             <a-col col="5">{{property[0]}}  </a-col>
             <a-col col="3" style="background-color : none"> : </a-col>
@@ -46,17 +46,17 @@
 import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
 import ServiceModel from '@/models/ServiceModel';
-import { defineComponent , onUpdated, reactive, toRefs} from '@vue/runtime-core'
+import { defineComponent , onMounted, onUpdated, reactive, toRefs} from '@vue/runtime-core'
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
 
 export default defineComponent({
     name : "ConfigView",
-    props : ["nodeid", "save"],
+    props : ["nodeProp", "save"],
     
     setup(props) {
         const state = reactive({
-            node : new ServiceModel(),
+            node : new NodeModel(),
             subenum : SubEnum,
             nodetype : NodeType,
             arr : ["arr"]
@@ -64,29 +64,24 @@ export default defineComponent({
         
         // copy our model to store node model
         state.node = {
-            ...store.getNode(props.nodeid)! as ServiceModel
+            ...props.nodeProp
         }
 
-        function updateNode(){
-             store.updateNode(state.node as NodeModel);
+        const updateNode = () =>{
+           const n =  store.updateNode(state.node);
+           state.node = new NodeModel()
+           state.node = n
         }
 
         function updateType(val : any){
-            console.log(val)
             state.node.type = NodeType.valueOf(val)!
-            console.log(state.node.type)
         }
 
         function handleConnections(d:any){
-            state.node.connections = d            
-        }
+            
 
-        onUpdated(()=>{
-            state.node = {
-            ...store.getNode(props.nodeid)! as ServiceModel
+            (state.node as ServiceModel).connections = d         
         }
-        })
-    
 
         return {
             ...toRefs(props),
