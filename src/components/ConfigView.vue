@@ -47,6 +47,7 @@ import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
 import ServiceModel from '@/models/ServiceModel';
 import { defineComponent , onMounted, onUpdated, reactive, toRefs} from '@vue/runtime-core'
+import { message } from 'ant-design-vue';
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
 
@@ -54,7 +55,7 @@ export default defineComponent({
     name : "ConfigView",
     props : ["nodeProp", "save"],
     
-    setup(props) {
+    setup(props, ctx) {
         const state = reactive({
             node : new NodeModel(),
             subenum : SubEnum,
@@ -71,6 +72,8 @@ export default defineComponent({
            const n =  store.updateNode(state.node);
            state.node = new NodeModel()
            state.node = n
+            message.info(`${n.name} node updated`, 2 )
+           return true;
         }
 
         function updateType(val : any){
