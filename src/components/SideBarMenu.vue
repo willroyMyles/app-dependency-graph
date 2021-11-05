@@ -6,11 +6,11 @@
           <a-row justify="space-between">
             <a-col >fliter by tag : </a-col>
             <a-col >
-              <a-select style="width: 100px" type="flex" placeholder="tags">
+              <a-select style="width: 100px" mode="tags" placeholder="tags" :value="currentTags" @change="handleTagChange">
                 <a-select-option
                   v-for="tag in store.getTags()"
                   :key="tag"
-                  value="none"
+                  :value="tag"
                   >{{ tag }}</a-select-option
                 >
               </a-select>
@@ -25,7 +25,7 @@
             </a-button>
           </a-col>
           <a-col col="12">
-            <a-button type="primary"> Commit </a-button>
+            <a-button type="primary" @click="filterByTag"> Commit </a-button>
           </a-col>
         </a-row>
     </a-layout>
@@ -54,13 +54,20 @@ export default defineComponent({
       currentTags: [] as string[],
     });
 
-    function filterByTag(tag: string) {
+    function filterByTag() {
       //d3store to filter by tag
+      store.filterByTag(state.currentTags)
+    }
+
+    function handleTagChange(tag : string[]){
+      state.currentTags = tag;
     }
 
     return {
       ...toRefs(state),
       store,
+      filterByTag,
+      handleTagChange
     };
   },
 });

@@ -10,9 +10,11 @@ import {store as d3store} from './D3Store'
 export const store ={
     state : reactive({
         nodes: new Map<string, NodeModel>(),
-        filtered: new Map<string, NodeModel>(),
-        tags : new Set<string>(),
-        currentObjectNode : null as NodeModel | null
+        tags : new Set<string>("ivr"),
+        currentObjectNode : null as NodeModel | null,
+        filter : {
+          tags : ["ivr"] as string[]
+        }
     }),
 
     initialize() {  
@@ -23,6 +25,7 @@ export const store ={
         const esif = new ServiceModel("esif")
         const wa = new ServiceModel("web admin")
         const rs = new ServiceModel("Reward service")
+        esif.tags.push("ivr")
 
         this.state.nodes.set(esif.id, esif)
         this.state.nodes.set(wa.id, wa)
@@ -54,8 +57,26 @@ export const store ={
       tags.map((tag) => this.addTag(tag))
     },
 
-    getNodes() : NodeModel[]  {
-      return Array.from(this.state.nodes.values())
+    getNodes() : NodeModel[]  {      
+      let arr = Array.from(this.state.nodes.values())
+      const newArr : Map<string, NodeModel> = new Map()
+      //filter is anything 
+      if(this.state.filter.tags.length != 0){
+        
+        arr.forEach((node, index) => {
+          // call filter on the node 
+          node.tags.forEach((tag, idx) =>{
+            if(this.state.filter.tags.includes(tag)){
+              newArr.set(node.id, node)
+            }
+          })
+
+        })
+
+        arr =Array.from( newArr.values())
+        
+      }
+      return arr
     },
 
     createConnection(sourceId : string, targetId : string){
@@ -64,7 +85,7 @@ export const store ={
     },
 
     getNode(id : string) : NodeModel | undefined{
-      return this.state.nodes.get(id) as NodeModel
+      return this.getNodes().find(p => p.id == id)
     },
 
     getNamebuId(id : string) : string | undefined{
@@ -73,26 +94,37 @@ export const store ={
 
     getLinks() : Array<Links>{
       const link : Links[][] = [];
-      this.state.nodes.forEach((node, key) => {
-        if(node.type.isService()){
-          console.log(node);
-          
-          const linksInArray =  (node as ServiceModel).connections.map((connection, index) => <Links>{
-            source : node,
-            target: this.getNode(connection)
+      const nodes = this.getNodes()
+      nodes.forEach((node, key) => {
+        if(node.type.isService()){          
+          let linksInArray =  (node as ServiceModel).connections.map((connection, index) => {
+            if(nodes.includes(node) && nodes.includes(this.getNode(connection) || new NodeModel())){
+              return <Links>{
+                source : node,
+                target: this.getNode(connection)
+              }
+            }
           })
-          link.push(linksInArray)
+          
+          console.log(linksInArray);
+         linksInArray =  linksInArray.filter( p => {
+
+            return p != undefined
+          })
+          // if(!linksInArray.includes(undefined)){
+            link.push(linksInArray as any )
+          // }
         }
       })
     
+      console.log(link.flat());
+      
       return link.flat();
     },
 
     getTags() : Array<string>{
       const _tags : string[][] = [];
-      this.state.nodes.forEach((node, key) => {
-          console.log(node);
-          
+      this.state.nodes.forEach((node, key) => {          
           const linksInArray =  node.tags.map((tag, index) => {
             return tag
           })
@@ -104,9 +136,6 @@ export const store ={
     },
 
     updateNode(node : NodeModel) : NodeModel{
-        console.log(node.tags);
-        
-
         let n : NodeModel | null= null;
         if(node.type.isDatabase()) n = new DatabaseModel(node.name, node)
         if(node.type.isService()) n = new ServiceModel(node.name, node)
@@ -117,12 +146,11 @@ export const store ={
       // should update graph
     },
 
-    filterByTag(tag : string | null) {
-      if(tag){
-        this.state.filtered
-      }else{
-        this.state.filtered = this.state.nodes
-      }
+    filterByTag(tag : string[]) {
+      console.log(tag);
+      
+      this.state.filter.tags = tag
+      d3store.createGraph()
     }
 }
 
