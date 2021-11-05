@@ -22,7 +22,7 @@
                     <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
                     <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
-                        <a-select-option v-for="val in datastore.state.nodes.values()" :key="val.id" :value="val.id" >
+                        <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
                             {{val.name}}
                         </a-select-option>
                     </a-select>
@@ -81,9 +81,12 @@ export default defineComponent({
         }
 
         function handleConnections(d:any){
-            
-
             (state.node as ServiceModel).connections = d         
+        }
+
+        function getNodesConnections(){
+            let conn = store.state.nodes.values();
+            return Array.from(conn).filter(p => p.id != state.node.id)
         }
 
         return {
@@ -93,7 +96,8 @@ export default defineComponent({
             updateNode,
             updateType,
             handleConnections,
-            datastore : store
+            datastore : store,
+            getNodesConnections
 
         }
     },
