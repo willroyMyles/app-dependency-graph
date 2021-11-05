@@ -6,7 +6,7 @@
           <a-row justify="space-between">
             <a-col >fliter by tag : </a-col>
             <a-col >
-              <a-select style="width: 100px" mode="tags" placeholder="tags" :value="currentTags" @change="handleTagChange">
+              <a-select style="width: 100px" mode="multiple" placeholder="tags" :value="currentTags" @change="handleTagChange">
                 <a-select-option
                   v-for="tag in store.getTags()"
                   :key="tag"
@@ -51,7 +51,7 @@ export default defineComponent({
 
   setup() {
     const state = reactive({
-      currentTags: [] as string[],
+      currentTags: Array.from(store.state.filter.tags) as string[],
     });
 
     function filterByTag() {
@@ -60,7 +60,7 @@ export default defineComponent({
     }
 
     function handleTagChange(tag : string[]){
-      state.currentTags = tag;
+      state.currentTags = tag
     }
 
     return {

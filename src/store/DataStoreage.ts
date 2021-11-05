@@ -10,10 +10,10 @@ import {store as d3store} from './D3Store'
 export const store ={
     state : reactive({
         nodes: new Map<string, NodeModel>(),
-        tags : new Set<string>("ivr"),
+        tags : new Set<string>(),
         currentObjectNode : null as NodeModel | null,
         filter : {
-          tags : ["ivr"] as string[]
+          tags : new Set<string>()
         }
     }),
 
@@ -25,7 +25,6 @@ export const store ={
         const esif = new ServiceModel("esif")
         const wa = new ServiceModel("web admin")
         const rs = new ServiceModel("Reward service")
-        esif.tags.push("ivr")
 
         this.state.nodes.set(esif.id, esif)
         this.state.nodes.set(wa.id, wa)
@@ -61,12 +60,12 @@ export const store ={
       let arr = Array.from(this.state.nodes.values())
       const newArr : Map<string, NodeModel> = new Map()
       //filter is anything 
-      if(this.state.filter.tags.length != 0){
+      if(this.state.filter.tags.size != 0){
         
         arr.forEach((node, index) => {
           // call filter on the node 
           node.tags.forEach((tag, idx) =>{
-            if(this.state.filter.tags.includes(tag)){
+            if(this.state.filter.tags.has(tag)){
               newArr.set(node.id, node)
             }
           })
@@ -106,7 +105,6 @@ export const store ={
             }
           })
           
-          console.log(linksInArray);
          linksInArray =  linksInArray.filter( p => {
 
             return p != undefined
@@ -116,9 +114,7 @@ export const store ={
           // }
         }
       })
-    
-      console.log(link.flat());
-      
+          
       return link.flat();
     },
 
@@ -132,7 +128,7 @@ export const store ={
       })
     
       this.state.tags = new Set(_tags.flat())
-      return _tags.flat();
+      return Array.from(this.state.tags);
     },
 
     updateNode(node : NodeModel) : NodeModel{
@@ -146,10 +142,8 @@ export const store ={
       // should update graph
     },
 
-    filterByTag(tag : string[]) {
-      console.log(tag);
-      
-      this.state.filter.tags = tag
+    filterByTag(tag : string[]) {      
+      this.state.filter.tags = new Set(tag)
       d3store.createGraph()
     }
 }
