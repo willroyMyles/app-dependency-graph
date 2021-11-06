@@ -12,14 +12,25 @@ export const store = {
   state: reactive<State>({
     svg: null,
     currentNode: null,
+    selected : null,
     onNodeClickCallback: null,
     onSvgClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
-    images : {
-      app : new Image().src = "./assets/svg/app.svg",
-      db : new Image().src = "./asstes/svg/db.svg",
-    }
   }),
+
+  unselectCircle(){
+    if(this.state.selected != null){
+          
+      d3.select(`#circle-${this.state.selected.id}`).transition().duration(500).attr("stroke-width", 0)
+      this.state.selected = null
+    }
+  },
+
+  selectCircle(d : NodeModel){
+      if(this.state.selected != null) this.unselectCircle()
+      d3.select(`#circle-${d.id}`).transition().duration(500).attr("stroke-width", 5)
+      this.state.selected = d
+  },
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
@@ -33,6 +44,7 @@ export const store = {
       .on("click", () => {
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
+        this.unselectCircle()
       });
 
       this.onDoubleClick(null)
@@ -196,12 +208,18 @@ export const store = {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("fill", (d) => "rgba(0,0,0,.02)")
-          
+          .attr("id",  d => `circle-${d.id}`)
+          .attr("stroke", "rgba(10, 200,50,0.2)")
+          .attr("stroke-width", 0)
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
+            
             if (this.state.onNodeClickCallback != null)
               this.state.onNodeClickCallback(e, d);
+
+            //add stroke to seected node
+            this.selectCircle(d)       
           })
           .transition()
           .duration(750)
@@ -436,13 +454,9 @@ function createGraphInternal() {
 
 interface State {
   svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
- 
   currentNode: d3.Selection<any, unknown, null, undefined> | null;
+  selected : NodeModel | null;
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
   transform: d3.ZoomTransform;
-  images : {
-    app : any
-    db : any
-  }
 }
