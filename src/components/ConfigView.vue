@@ -23,7 +23,15 @@
                     <div v-if="property[0] == 'connections'">
                     <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
                         <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
+
                             {{val.name}}
+                        </a-select-option>
+                    </a-select>
+                    </div>
+                <div v-if="property[0] == 'tags'">
+                    <a-select mode="tags" style="width: 100px" v-on:change="handleTags" placeholder="no tags..." :value="node[property[0]]">
+                        <a-select-option v-for="val in datastore.state.tags" :key="val" :value="val" >
+                            {{val}}
                         </a-select-option>
                     </a-select>
                     </div>
@@ -89,6 +97,10 @@ export default defineComponent({
             return Array.from(conn).filter(p => p.id != state.node.id)
         }
 
+        function handleTags(d:string[]){
+            state.node.tags = d      
+        }
+
         return {
             ...toRefs(props),
             ...toRefs(state),
@@ -96,8 +108,9 @@ export default defineComponent({
             updateNode,
             updateType,
             handleConnections,
-            datastore : store,
             getNodesConnections
+            handleTags,
+            datastore : store
 
         }
     },
