@@ -81,6 +81,7 @@ export default defineComponent({
 
     function onSelect(e: any, node: NodeModel) {
       state.node = node;
+      state.editing = false
     }
 
     function onDeselect() {

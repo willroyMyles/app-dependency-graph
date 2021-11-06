@@ -18,12 +18,7 @@
           </a-row>
         </div>
       <!-- </a-layout-content> -->
-        <a-row style="bottom" justify="space-around">
-          <a-col col="4">
-            <a-button :style="{ marginRight: '8px' }">
-              Cancel
-            </a-button>
-          </a-col>
+        <a-row style="bottom" justify="center">
           <a-col col="12">
             <a-button type="primary" @click="filterByTag"> Commit </a-button>
           </a-col>
