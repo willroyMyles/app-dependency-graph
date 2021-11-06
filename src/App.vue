@@ -4,17 +4,17 @@
     <a-layout-content>
       <Content />
     </a-layout-content>
-    <div id="zoom" class="zoom">{{}}</div>
+    <div id="zoom" class="zoom">{{ }}</div>
     <a-layout-sider :width="width" height="100%" style="background: white">
       <div v-if="node == null">
         <SideBarMenu />
       </div>
-      <div v-if="node != null">
+      <div v-else>
         <div>
           <span>{{ node.name }} configuration</span>
         </div>
         <hr />
-        <ConfigView :nodeProp="node" ref="updateNode" :key="node.id" />
+        <ConfigView :nodeProp="node" :disabled="!editing" ref="updateNode" :key="node.id" />
         <div
           :style="{
             position: 'absolute',
@@ -29,45 +29,49 @@
           }"
         >
           <a-row justify="space-around" v-if="editing">
-            <a-button :style="{ marginRight: '8px' }" >
-            Cancel
-          </a-button>
-          <a-button type="primary" @click="commit"> Commit </a-button>
+            <a-button :style="{ marginRight: '8px' }" @click="cancel">Cancel</a-button>
+            <a-button type="primary" @click="commit">Commit</a-button>
           </a-row>
           <a-row justify="center" v-else>
-            <a-col >
-                          <a-button type="secondary" >Edit</a-button>
-
+            <a-col>
+              <a-button type="secondary" @click="handleEditing">Edit</a-button>
             </a-col>
           </a-row>
         </div>
       </div>
     </a-layout-sider>
-    <!-- <a-layout-footer>foooter</a-layout-footer> -->
   </a-layout>
 </template>
 
 <script lang="ts">
-import { Component, computed, defineComponent, reactive, ref, toRefs } from "vue";
+import {
+  Component,
+  computed,
+  defineComponent,
+  reactive,
+  ref,
+  toRefs,
+} from "vue";
 import Content from "./components/content/content.vue";
 import NodeModel from "./models/node";
 import ConstantsStore from "./store/ConstantsStore";
 import ConfigView from "./components/ConfigView.vue";
 import { store as d3Store } from "./store/D3Store";
-import SideBarMenu from './components/SideBarMenu.vue'
+import { store } from "./store/DataStoreage";
+import SideBarMenu from "./components/SideBarMenu.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     Content,
     ConfigView,
-    SideBarMenu
+    SideBarMenu,
   },
 
   setup() {
     const state = reactive({
       node: null as NodeModel | null,
-      editing : false
+      editing: false,
     });
 
     const updateNode = ref<typeof ConfigView>();
@@ -76,7 +80,7 @@ export default defineComponent({
     d3Store.setOnSvgClickCallback(onDeselect);
 
     function onSelect(e: any, node: NodeModel) {
-      state.node = node
+      state.node = node;
     }
 
     function onDeselect() {
@@ -84,7 +88,16 @@ export default defineComponent({
     }
 
     function commit() {
-      updateNode.value!.updateNode()
+      updateNode.value!.updateNode();
+    }
+
+    function cancel() {
+      updateNode.value!.reset();
+      state.editing = false;
+    }
+
+    function handleEditing() {
+      state.editing = true;
     }
 
     return {
@@ -92,6 +105,8 @@ export default defineComponent({
       ...toRefs(state),
       updateNode,
       commit,
+      cancel,
+      handleEditing,
     };
   },
 });
