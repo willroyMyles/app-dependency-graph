@@ -2,7 +2,7 @@ import NodeModel from "@/models/node";
 import { reactive } from "@vue/runtime-core";
 import C from "./ConstantsStore";
 import * as d3 from "d3";
-import { store as datastore } from "./DataStoreage";
+import { Links, store as datastore } from "./DataStoreage";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
 
@@ -20,6 +20,30 @@ export const store = {
       db : new Image().src = "./asstes/svg/db.svg",
     }
   }),
+
+  circles : null as any,
+  images : null as any,
+  links : null as any,
+  text : null as any,
+
+  simulation : d3.forceSimulation(datastore.getNodes())
+  .force("link", d3.forceLink(datastore.getLinks()).id(d => `line-${d.index}`).distance(100).strength(0.01))
+  .force("charge", d3.forceManyBody().distanceMax(500).distanceMin(300))
+  .force("center",  d3.forceCenter())
+  .force("x", d3.forceX())
+  .force("y", d3.forceY()).stop()
+  .on("tick", () => {
+    console.log("tiked", store.state.svg);
+    
+      
+  
+      store.state.svg?.selectAll<any, NodeModel>("circle").attr("cx", (d:NodeModel) => d.x).attr("cy", (d:NodeModel)=> d.y)
+      store.state.svg?.selectAll<any, NodeModel>("image").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel)=> d.y)
+      store.state.svg?.selectAll<any, NodeModel>("text").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel) => C.textOffset(d.y))
+      store.state.svg?.selectAll<any, Links>("line").attr("x1", (d:Links) => d.source.x).attr("y1", (d:Links) => d.source.y).attr("x2", (d:Links) => d.target.x).attr("y2", (d:Links) => d.target.y)
+      
+    }),
+
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
@@ -128,10 +152,11 @@ export const store = {
     this.createCircles();
     this.createImages();
     this.createText();
-    this.initializeDrag();
+    this.initializeDrag(this.simulation);
     this.initializeZoom();
 
     this.state.svg?.selectAll("circle").raise();
+    this.simulation.alphaTarget(.4).restart()
   },
 
   async createImages(){
@@ -139,7 +164,7 @@ export const store = {
     ?.selectAll<any, NodeModel>("image")
     .data<NodeModel>(datastore.getNodes(), d => `img-${d.id}`)
 
-
+    this.images = nodes;
     // #### images have to be in public folder in path
     //create images 
     nodes?.join(
@@ -188,7 +213,7 @@ export const store = {
       ?.selectAll<any, NodeModel>("circle")
       .data<NodeModel>(datastore.getNodes(), d => `circle-${d.id}`)
 
-      
+      this.circles= nodes;
     //create circles
     nodes?.join(
       enter => enter 
@@ -196,7 +221,7 @@ export const store = {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("fill", (d) => "rgba(0,0,0,.02)")
-          
+          .attr("id",d =>  `circle-${d.id}`)
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
@@ -222,6 +247,8 @@ export const store = {
         "line"
       )
       .data(lineData, (d) => d.source.id + d.target.id);
+
+      this.links = lines;
 
     const markers = this.state.svg?.append("defs").append("marker");
     const markerSize = 14;
@@ -287,6 +314,8 @@ export const store = {
       .svg!.selectAll<SVGTextElement, NodeModel>("text")
       .data(datastore.getNodes(), d => `text-${d.id}`);
 
+      this.text = texts;
+
     texts.join(
       (enter) =>
         enter
@@ -308,7 +337,9 @@ export const store = {
     );
   },
 
-  initializeDrag() {
+ 
+
+  initializeDrag(simulation : d3.Simulation<NodeModel, undefined> ) {
     const st = this.state;
 
     this.state.svg
@@ -323,6 +354,7 @@ export const store = {
 
     function dragstarted(e: any, d: any) {
       const el = d3.select(e.sourceEvent.srcElement);
+      simulation.alphaTarget(0.004).restart()
       st.currentNode = el;
     }
 
@@ -334,7 +366,7 @@ export const store = {
       d.y += (e.dy * 1) / st.transform.k;      
 
       //update the visual node on graph
-      st.currentNode!.attr("cx", d.x).attr("cy", d.y);
+      st.svg?.select(`#circle-${d.id}`).attr("cx", d.x).attr("cy", d.y);
 
       //update image position 
       st.svg?.select(`#image-${d.id}`).attr("x", d.x ).attr("y", d.y)
