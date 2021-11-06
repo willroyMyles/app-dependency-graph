@@ -28,10 +28,18 @@
             zIndex: 1,
           }"
         >
-          <a-button :style="{ marginRight: '8px' }" >
+          <a-row justify="space-around" v-if="editing">
+            <a-button :style="{ marginRight: '8px' }" >
             Cancel
           </a-button>
           <a-button type="primary" @click="commit"> Commit </a-button>
+          </a-row>
+          <a-row justify="center" v-else>
+            <a-col >
+                          <a-button type="secondary" >Edit</a-button>
+
+            </a-col>
+          </a-row>
         </div>
       </div>
     </a-layout-sider>
@@ -59,6 +67,7 @@ export default defineComponent({
   setup() {
     const state = reactive({
       node: null as NodeModel | null,
+      editing : false
     });
 
     const updateNode = ref<typeof ConfigView>();

@@ -108,7 +108,7 @@ export default defineComponent({
             updateNode,
             updateType,
             handleConnections,
-            getNodesConnections
+            getNodesConnections,
             handleTags,
             datastore : store
 
