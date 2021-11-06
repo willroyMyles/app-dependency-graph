@@ -31,7 +31,6 @@ export default defineComponent({
 
     const generateNodes = async () => {
       d3Store.initialize(d3.select("#nodes"));
-      // d3Store.setOnClickCallback(openDrawer);
       d3Store.createGraph()
       console.log("generated nodes");
     };

@@ -137,7 +137,7 @@ export const store = {
   async createImages(){
     const nodes = this.state.svg
     ?.selectAll<any, NodeModel>("image")
-    .data<NodeModel>(datastore.state.nodes.values())
+    .data<NodeModel>(datastore.getNodes(), d => `img-${d.id}`)
 
 
     // #### images have to be in public folder in path
@@ -186,7 +186,7 @@ export const store = {
 
     const nodes = this.state.svg
       ?.selectAll<any, NodeModel>("circle")
-      .data<NodeModel>(datastore.state.nodes.values(), d => `circle-${d.id}`)
+      .data<NodeModel>(datastore.getNodes(), d => `circle-${d.id}`)
 
       
     //create circles
@@ -284,8 +284,8 @@ export const store = {
 
   createText() {
     const texts = this.state
-      .svg!.selectAll<SVGTextElement, unknown>("text")
-      .data(datastore.state.nodes.values());
+      .svg!.selectAll<SVGTextElement, NodeModel>("text")
+      .data(datastore.getNodes(), d => `text-${d.id}`);
 
     texts.join(
       (enter) =>
