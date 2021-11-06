@@ -2,18 +2,17 @@
 <template>
 <div v-if="node != null">
     <div v-for="property in Object.entries(node)" :key="property[0] + node.id">
-        <a-row justify="space-between" class="prop-row" type="flex">
-            <a-col col="5">{{property[0]}}  </a-col>
-            <a-col col="3" style="background-color : none"> : </a-col>
-            <a-col col="12">
+        <a-row justify="space-between" align="middle" class="prop-row" type="flex">
+            <a-col span="4" >{{property[0]}}  </a-col>
+            <a-col >
                 <span v-if="typeof property[1] == typeof true" >
-                    <input type="checkbox" v-model="node[property[0]]" :disabled="disabled">
+                    <input type="checkbox" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if="typeof property[1] == typeof ''">
-                    <input type="text" v-model="node[property[0]]" :disabled="disabled">
+                    <input type="text" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if="typeof property[1] == typeof 10">
-                    <input type="number" v-model="node[property[0]]" :disabled="disabled">
+                    <input type="number" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if=" property[1] == null">
                     none
@@ -128,8 +127,27 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
+<style>
 .prop-row{
     padding: 5px 10px 5px 10px;
+    overflow: hidden;
+}
+
+hr {
+    background-color: lightgrey;
+    opacity: .1;
+    height: 3px;
+}
+
+input{
+    border: 1.2px solid lightgray;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+input:disabled {
+    border: none;
+    background-color: transparent;
+
 }
 </style>
