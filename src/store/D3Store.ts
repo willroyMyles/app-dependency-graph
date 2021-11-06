@@ -136,12 +136,12 @@ export const store = {
   },
 
   createGraph() {    
-    this.createLine();
     this.createCircles();
     this.createImages();
     this.createText();
     this.initializeDrag();
     this.initializeZoom();
+    this.createLine();
 
     this.state.svg?.selectAll("circle").raise();
   },
@@ -297,7 +297,8 @@ export const store = {
           .attr("x2", (d) => d.source.x)
           .attr("y2", (d) => d.source.y)
           .remove()
-    );
+    ).lower()
+
   },
 
   createText() {
@@ -315,6 +316,8 @@ export const store = {
           .attr("id", (d) => `text-${d.id}`)
           .attr("text-anchor", "middle")
           .attr("fill", "transparent")
+          .attr("padding", "10")
+          .attr("background-color", "lightgrey")
           .transition()
           .duration(1750)
           .attr("fill", "black"),
