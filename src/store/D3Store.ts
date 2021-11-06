@@ -26,24 +26,36 @@ export const store = {
   links : null as any,
   text : null as any,
 
-  simulation : d3.forceSimulation(datastore.getNodes())
-  .force("link", d3.forceLink(datastore.getLinks()).id(d => `line-${d.index}`).distance(100).strength(0.01))
-  .force("charge", d3.forceManyBody().distanceMax(500).distanceMin(300))
-  .force("center",  d3.forceCenter())
-  .force("x", d3.forceX())
-  .force("y", d3.forceY()).stop()
-  .on("tick", () => {
-    console.log("tiked", store.state.svg);
-    
-      
-  
-      store.state.svg?.selectAll<any, NodeModel>("circle").attr("cx", (d:NodeModel) => d.x).attr("cy", (d:NodeModel)=> d.y)
-      store.state.svg?.selectAll<any, NodeModel>("image").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel)=> d.y)
-      store.state.svg?.selectAll<any, NodeModel>("text").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel) => C.textOffset(d.y))
-      store.state.svg?.selectAll<any, Links>("line").attr("x1", (d:Links) => d.source.x).attr("y1", (d:Links) => d.source.y).attr("x2", (d:Links) => d.target.x).attr("y2", (d:Links) => d.target.y)
-      
-    }),
+  simulation : d3.forceSimulation<NodeModel, any>()
+  .force("center",  d3.forceCenter(C.content_width/2, C.height/2)),
 
+
+  initSimulation(){
+    this.simulation
+    .nodes(datastore.getNodes()).tick(.01)
+    .force("collide", d3.forceCollide(C.radius))
+    .force("link", d3.forceLink(datastore.getLinks()).id(d => `line-${d.index}`).distance( d => {
+      if(d.target.type.isDatabase()) return 100
+      if(d.target.type.isService()) return 190
+      return 150;
+    }))
+    // .force("charge", d3.forceManyBody().distanceMax(160).distanceMin(100).strength(-200)).stop()
+    .on("tick", () => {
+  
+        store.state.svg?.selectAll<any, NodeModel>("circle").attr("cx", (d:NodeModel) => d.x).attr("cy", (d:NodeModel)=> d.y)
+        store.state.svg?.selectAll<any, NodeModel>("image").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel)=> d.y)
+        store.state.svg?.selectAll<any, NodeModel>("text").attr("x", (d:NodeModel) => d.x).attr("y", (d:NodeModel) => C.textOffset(d.y))
+        store.state.svg?.selectAll<any, Links>("line").attr("x1", (d:Links) => d.source.x).attr("y1", (d:Links) => d.source.y).attr("x2", (d:Links) => d.target.x).attr("y2", (d:Links) => d.target.y)
+        
+      })
+      .on("end",() => {
+        console.log("ended");
+      })
+      .stop()
+
+      this.simulation.alphaDecay(1).alphaTarget(.01).restart()
+    },
+  
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
@@ -148,14 +160,16 @@ export const store = {
   },
 
   createGraph() {    
+
     this.createLine();
     this.createCircles();
     this.createImages();
     this.createText();
     this.initializeDrag(this.simulation);
     this.initializeZoom();
-
+    
     this.state.svg?.selectAll("circle").raise();
+    this.initSimulation()
     this.simulation.alphaTarget(.4).restart()
   },
 
@@ -354,7 +368,7 @@ export const store = {
 
     function dragstarted(e: any, d: any) {
       const el = d3.select(e.sourceEvent.srcElement);
-      simulation.alphaTarget(0.004).restart()
+      simulation.alphaTarget(0.4).restart()
       st.currentNode = el;
     }
 
@@ -398,6 +412,7 @@ export const store = {
 
     function dragended(e: any, d: any) {
       st.currentNode = null;
+      simulation.alpha(.01)
     }
   },
 
