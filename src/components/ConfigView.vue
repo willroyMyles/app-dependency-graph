@@ -21,8 +21,9 @@
                 <span v-if=" property[1] instanceof Array">
                     <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
-                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="no connections" :value="node[property[0]]">
-                        <a-select-option v-for="val in datastore.state.nodes.values()" :key="val.id" :value="val.id" >
+                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
+                        <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
+
                             {{val.name}}
                         </a-select-option>
                     </a-select>
@@ -54,6 +55,7 @@ import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
 import ServiceModel from '@/models/ServiceModel';
 import { defineComponent , onMounted, onUpdated, reactive, toRefs} from '@vue/runtime-core'
+import { message } from 'ant-design-vue';
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
 
@@ -61,7 +63,7 @@ export default defineComponent({
     name : "ConfigView",
     props : ["nodeProp", "save"],
     
-    setup(props) {
+    setup(props, ctx) {
         const state = reactive({
             node : new NodeModel(),
             subenum : SubEnum,
@@ -78,6 +80,8 @@ export default defineComponent({
            const n =  store.updateNode(state.node);
            state.node = new NodeModel()
            state.node = n
+            message.info(`${n.name} node updated`, 2 )
+           return true;
         }
 
         function updateType(val : any){
@@ -86,6 +90,11 @@ export default defineComponent({
 
         function handleConnections(d:any){
             (state.node as ServiceModel).connections = d         
+        }
+
+        function getNodesConnections(){
+            let conn = store.state.nodes.values();
+            return Array.from(conn).filter(p => p.id != state.node.id)
         }
 
         function handleTags(d:string[]){
@@ -99,6 +108,7 @@ export default defineComponent({
             updateNode,
             updateType,
             handleConnections,
+            getNodesConnections
             handleTags,
             datastore : store
 
