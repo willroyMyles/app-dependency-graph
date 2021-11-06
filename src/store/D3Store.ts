@@ -231,7 +231,6 @@ export const store = {
       (update) => update.transition().duration(750)
     )
 
-
   },
   createLine() {
     const lineData = datastore.getLinks();
@@ -298,6 +297,7 @@ export const store = {
           .attr("y2", (d) => d.source.y)
           .remove()
     ).lower()
+    
 
   },
 
@@ -326,7 +326,8 @@ export const store = {
           .transition()
           .duration(1750)
           .text((d) => d.name)
-    );
+    )
+    
   },
 
   initializeDrag() {
