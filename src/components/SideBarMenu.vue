@@ -4,9 +4,22 @@
       <!-- <a-layout-content style="height: 90vh; display : flex"> -->
         <div class="mounted content">
           <a-row justify="space-between">
-            <a-col >fliter by tag : </a-col>
+            <a-col span="5">fliter by tag : </a-col>
             <a-col >
               <a-select style="width: 100px" mode="multiple" placeholder="tags" :value="currentTags" @change="handleTagChange">
+                <a-select-option
+                  v-for="tag in store.getTags()"
+                  :key="tag"
+                  :value="tag"
+                  >{{ tag }}</a-select-option
+                >
+              </a-select>
+            </a-col>
+          </a-row>
+          <a-row justify="space-between">
+            <a-col span = 5> search </a-col>
+            <a-col >
+              <a-select style="width: 100px" mode="default" placeholder="search" :value="pattern" @change="handleTagChange">
                 <a-select-option
                   v-for="tag in store.getTags()"
                   :key="tag"
@@ -40,6 +53,7 @@ import {
   toRefs,
 } from "vue";
 import { store } from "@/store/DataStoreage";
+import NodeModel from "@/models/node";
 
 export default defineComponent({
   name: "SideBarMenu",
@@ -47,10 +61,11 @@ export default defineComponent({
   setup() {
     const state = reactive({
       currentTags: Array.from(store.state.filter.tags) as string[],
+      pattern : "" as string | null,
+      searchResults : [] as NodeModel[]
     });
 
     function filterByTag() {
-      //d3store to filter by tag
       store.filterByTag(state.currentTags)
     }
 
@@ -58,11 +73,22 @@ export default defineComponent({
       state.currentTags = tag
     }
 
+    function handleSearchChange(patter : string){
+
+    }
+
+    function searchByName(){
+
+    }
+
     return {
       ...toRefs(state),
       store,
       filterByTag,
-      handleTagChange
+      searchByName,
+      handleTagChange,
+      handleSearchChange
+      
     };
   },
 });
