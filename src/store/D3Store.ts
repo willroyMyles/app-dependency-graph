@@ -9,13 +9,14 @@ import ServiceModel from "@/models/ServiceModel";
 export const store = {
   DEBUG: true,
 
-  state: reactive<State>({
-    svg: null,
-    currentNode: null,
-    selected : null,
-    onNodeClickCallback: null,
-    onSvgClickCallback: null,
+  state: reactive({
+    svg: null as d3.Selection<SVGSVGElement, undefined, null, undefined> | null,
+    currentNode: null as d3.Selection<any, unknown, null, undefined> | null,
+    selected : null as NodeModel | null,
+    onNodeClickCallback: null as any,
+    onSvgClickCallback: null as any,
     transform: new d3.ZoomTransform(1, 0, 0),
+    nodeToHighlight : null as string | null
   }),
 
   unselectCircle(){
@@ -448,6 +449,7 @@ export const store = {
       datastore.addNode(node);
 
       createGraphInternal();
+      //highlight just created node
     }
   },
 };
@@ -456,11 +458,3 @@ function createGraphInternal() {
   store.createGraph();
 }
 
-interface State {
-  svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
-  currentNode: d3.Selection<any, unknown, null, undefined> | null;
-  selected : NodeModel | null;
-  onNodeClickCallback: any | null;
-  onSvgClickCallback: any | null;
-  transform: d3.ZoomTransform;
-}
