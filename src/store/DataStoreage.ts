@@ -145,6 +145,10 @@ export const store ={
     filterByTag(tag : string[]) {      
       this.state.filter.tags = new Set(tag)
       d3store.createGraph()
+    },
+
+    searchByName(name : string){
+      return this.getNodes().filter(p => p.name.includes(name))
     }
 }
 
