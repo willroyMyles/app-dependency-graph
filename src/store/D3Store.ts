@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import { store as datastore } from "./DataStoreage";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
+import contextmenu from "d3-context-menu";
 
 export const store = {
   DEBUG: true,
@@ -14,6 +15,7 @@ export const store = {
     currentNode: null,
     onNodeClickCallback: null,
     onSvgClickCallback: null,
+    onRightClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
   }),
 
@@ -29,7 +31,26 @@ export const store = {
       .on("click", () => {
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
-      });
+      })
+      .on('contextmenu', contextmenu(menu, {
+        onOpen: function(){
+          //test
+        },
+        onClose: function(){
+          //test2
+        },
+        // position:{
+        //   top: 100,
+        //   left: 200
+        // },
+        theme: 'd3-context'
+      }));
+      // .on("contextmenu", (e) => {
+      //   e.preventDefault();
+      //   console.log(menu)
+      //   contextmenu(menu)
+      //   this.state.onRightClickCallback()
+      // });
 
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
@@ -51,7 +72,6 @@ export const store = {
     this.initializeZoomRect()
 
   },
-
   initializeZoomRect(){
 
     const zoomDisplay = d3.select("#zoom-svg")
@@ -95,6 +115,10 @@ export const store = {
   },
   setOnSvgClickCallback(onclkcallback: any) {
     this.state.onSvgClickCallback = onclkcallback;
+  },
+
+  setOnRightClickCallback(onRightClickCallback: any){
+    this.state.onRightClickCallback = onRightClickCallback;
   },
 
   resetZoom(){
@@ -423,5 +447,24 @@ interface State {
   currentNode: d3.Selection<any, unknown, null, undefined> | null;
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
+  onRightClickCallback: any | null;
   transform: d3.ZoomTransform;
 }
+
+const menu = [
+	{
+		title: 'Item #1',
+		action: function(d:NodeModel) {
+			console.log('Item #1 clicked!');
+			console.log('The data for this circle is: ' + d);
+		},
+		disabled: false // optional, defaults to false
+	},
+	{
+		title: 'Item #2',
+		action: function(d:NodeModel) {
+			console.log('You have clicked the second item!');
+			console.log('The data for this circle is: ' + d);
+		}
+	}
+]

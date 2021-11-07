@@ -1,5 +1,4 @@
 <template>
-
   <v-col id="nodes" />
 </template>
 
@@ -18,12 +17,11 @@ import { store as d3Store } from "../../store/D3Store";
 import {store as datastore} from '../../store/DataStoreage'
 export default defineComponent({
   name: "Content",
-  components : {
-  },
   setup() {
     const state = reactive({
       drawerVisible: false,
       node : null as NodeModel | null,
+      menu: false,
     });
 
     const updateNode = ref()
@@ -38,7 +36,12 @@ export default defineComponent({
 
     onMounted(() => {
       generateNodes();
+      d3Store.setOnRightClickCallback(makeMenusVisible);
     });
+
+    function makeMenusVisible(){
+      state.menu = true;
+    }
 
     function onDrawerClose() {
       state.drawerVisible = false;

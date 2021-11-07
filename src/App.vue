@@ -93,6 +93,12 @@ export default defineComponent({
 </script>
 
 <style>
+.d3-context{
+  position: absolute;
+  background-color: lightgrey;
+  padding: 1rem;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
