@@ -8,7 +8,7 @@
             <a-col >
               <a-select style="width: 100px" mode="multiple" placeholder="tags" :value="currentTags" @change="handleTagChange">
                 <a-select-option
-                  v-for="tag in store.getTags()"
+                  v-for="tag in tags"
                   :key="tag"
                   :value="tag"
                   >{{ tag }}</a-select-option
@@ -47,6 +47,7 @@ export default defineComponent({
   setup() {
     const state = reactive({
       currentTags: Array.from(store.state.filter.tags) as string[],
+      tags : store.getTags() as string[]
     });
 
     function filterByTag() {

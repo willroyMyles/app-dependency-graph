@@ -18,7 +18,6 @@
                     none
                 </span>
                 <span v-if=" property[1] instanceof Array">
-                    <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
                     <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]" :disabled="disabled">
                         <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
@@ -71,9 +70,13 @@ export default defineComponent({
         })
         
         // copy our model to store node model
+
+
+        onMounted(()=>{
         state.node = {
             ...props.nodeProp
         }
+        })
 
         const updateNode = () =>{
            const n =  store.updateNode(state.node);

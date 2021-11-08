@@ -145,6 +145,14 @@ export const store = {
     this.createLine();
 
     this.state.svg?.selectAll("circle").raise();
+
+    if(this.state.nodeToHighlight){
+      const nodeToHighlight = this.state.svg?.select(`#${this.state.nodeToHighlight}`)
+      const data = nodeToHighlight?.data()[0];      
+      this.state.onNodeClickCallback(null, data)
+      this.selectCircle(data as any)
+      this.state.nodeToHighlight = null
+    }
   },
 
   async createImages(){
@@ -444,6 +452,7 @@ export const store = {
       const node = new ServiceModel();
       node.x = t[0];
       node.y = t[1];
+      st.nodeToHighlight = `circle-${node.id}`
 
       //add node to list
       datastore.addNode(node);
