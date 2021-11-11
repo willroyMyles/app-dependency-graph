@@ -16,6 +16,7 @@ export const store = {
     selected : null as NodeModel | null,
     onNodeClickCallback: null as any,
     onSvgClickCallback: null as any,
+    onRightClickCallback: null as any,
     transform: new d3.ZoomTransform(1, 0, 0),
     nodeToHighlight : null as string | null
   }),
@@ -484,29 +485,14 @@ export const store = {
   },
 
   onDoubleClick(callback: any) {
-    this.state.svg!.on("dblclick", handleDoubleClick);
+    this.state.svg!.on("dblclick", this.handleDoubleClick);
     const st = this.state;
 
-    function handleDoubleClick(e: any, i: any) {
-      const t = st.transform.invert([e.x, e.y]);
-
-      //create new node
-      const node = new ServiceModel();
-      node.x = t[0];
-      node.y = t[1];
-      st.nodeToHighlight = `circle-${node.id}`
-
-      //add node to list
-      datastore.addNode(node);
-
-      createGraphInternal();
-      //highlight just created node
-    }
   },
   resolveContextMenuItemClick(e:Event, d:any){
     switch(d){
       case "createNode":{
-        this.createNode(e);
+        this.handleDoubleClick(e, null);
         break;
       }
       default: {
@@ -516,24 +502,21 @@ export const store = {
     }
 
   },
-  createNode(e:Event){
-    console.log("creating new node");
-    const st = this.state;
-    
-    //initializing the d3 pointer event
-    const mouse = d3.pointer(e);
-    console.log(mouse)
-    const t = st.transform.invert([mouse[0], mouse[1]]);
+  
+   handleDoubleClick(e: any, i: any) {
+    const t = this.state.transform.invert([e.x, e.y]);
 
-    // create new node
+    //create new node
     const node = new ServiceModel();
     node.x = t[0];
     node.y = t[1];
+    this.state.nodeToHighlight = `circle-${node.id}`
 
     //add node to list
     datastore.addNode(node);
 
     createGraphInternal();
+    //highlight just created node
   }
 };
 
