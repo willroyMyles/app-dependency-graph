@@ -5,4 +5,3 @@ declare module '*.vue' {
   export default component
 }
 
-declare module 'd3-context-menu';
