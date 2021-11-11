@@ -1,4 +1,9 @@
 <template>
+  <div id="myContextMenu" class="d3-context">
+    <ul class="context-menu-ul">
+      <li class="d3-context-menu-list-item context-item" data="createNode">create new node</li>
+    </ul>
+  </div>
   <v-col id="nodes" />
 </template>
 
@@ -74,7 +79,6 @@ export default defineComponent({
   },
 });
 </script>
-
 <style scoped>
 .content {
   /* height: 80vh; */

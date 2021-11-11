@@ -29,28 +29,31 @@ export const store = {
       .style("background-color", "rgba(240,240,240,1.0)")
       .attr("id", "svg")
       .on("click", () => {
+        // when you click away close context menu
+        d3.select('#myContextMenu')
+        .style('display', 'none')
+
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
       })
-      .on('contextmenu', contextmenu(menu, {
-        onOpen: function(){
-          //test
-        },
-        onClose: function(){
-          //test2
-        },
-        // position:{
-        //   top: 100,
-        //   left: 200
-        // },
-        theme: 'd3-context'
-      }));
-      // .on("contextmenu", (e) => {
-      //   e.preventDefault();
-      //   console.log(menu)
-      //   contextmenu(menu)
-      //   this.state.onRightClickCallback()
-      // });
+      .on("contextmenu", function(data, index){
+        const position = d3.pointer(data);
+        d3.select('#myContextMenu')
+        .style('left', position[0] + "px")
+        .style('top', position[1]+ "px")
+        .style('display', 'block')
+
+        data.preventDefault();
+      });
+
+      d3.selectAll('.context-item')
+      .on('click', (e:Event, d) => {
+        d3.select('#myContextMenu')
+        .style('display', 'none')
+        console.log("top event coords: ",d3.pointer(e))
+        const operation = (<HTMLLIElement>e.target).getAttribute("data")
+        this.resolveContextMenuItemClick(e, operation);
+      })
 
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
@@ -435,6 +438,38 @@ export const store = {
       createGraphInternal();
     }
   },
+  resolveContextMenuItemClick(e:Event, d:any){
+    switch(d){
+      case "createNode":{
+        this.createNode(e);
+        break;
+      }
+      default: {
+        console.log("No Operation defined")
+        break;
+      }
+    }
+
+  },
+  createNode(e:Event){
+    console.log("creating new node");
+    const st = this.state;
+    
+    //initializing the d3 pointer event
+    const mouse = d3.pointer(e);
+    console.log(mouse)
+    const t = st.transform.invert([mouse[0], mouse[1]]);
+
+    // create new node
+    const node = new ServiceModel();
+    node.x = t[0];
+    node.y = t[1];
+
+    //add node to list
+    datastore.addNode(node);
+
+    createGraphInternal();
+  }
 };
 
 function createGraphInternal() {
@@ -450,21 +485,3 @@ interface State {
   onRightClickCallback: any | null;
   transform: d3.ZoomTransform;
 }
-
-const menu = [
-	{
-		title: 'Item #1',
-		action: function(d:NodeModel) {
-			console.log('Item #1 clicked!');
-			console.log('The data for this circle is: ' + d);
-		},
-		disabled: false // optional, defaults to false
-	},
-	{
-		title: 'Item #2',
-		action: function(d:NodeModel) {
-			console.log('You have clicked the second item!');
-			console.log('The data for this circle is: ' + d);
-		}
-	}
-]
