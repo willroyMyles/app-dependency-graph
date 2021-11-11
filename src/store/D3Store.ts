@@ -12,11 +12,26 @@ export const store = {
   state: reactive<State>({
     svg: null,
     currentNode: null,
+    selected : null,
     onNodeClickCallback: null,
     onSvgClickCallback: null,
     onRightClickCallback: null,
     transform: new d3.ZoomTransform(1, 0, 0),
   }),
+
+  unselectCircle(){
+    if(this.state.selected != null){
+          
+      d3.select(`#circle-${this.state.selected.id}`).transition().duration(500).attr("stroke-width", 0)
+      this.state.selected = null
+    }
+  },
+
+  selectCircle(d : NodeModel){
+      if(this.state.selected != null) this.unselectCircle()
+      d3.select(`#circle-${d.id}`).transition().duration(500).attr("stroke-width", 5)
+      this.state.selected = d
+  },
 
   initialize(div: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
     this.state.svg = d3
@@ -145,31 +160,32 @@ export const store = {
  
   },
 
-  createGraph() {
-    console.log("creating graph");
-    
-    this.createLine();
+  createGraph() {    
     this.createCircles();
     this.createImages();
     this.createText();
     this.initializeDrag();
     this.initializeZoom();
+    this.createLine();
 
     this.state.svg?.selectAll("circle").raise();
   },
 
-  createImages(){
+  async createImages(){
     const nodes = this.state.svg
-    ?.selectAll<any, NodeModel>("g")
-    .data<NodeModel>(datastore.state.nodes.values())
+    ?.selectAll<any, NodeModel>("image")
+    .data<NodeModel>(datastore.getNodes(), d => `img-${d.id}`)
 
 
+    // #### images have to be in public folder in path
     //create images 
     nodes?.join(
       enter => enter 
-      .append("svg:image")
-      .attr("href", ()=>{
-        const imgPath = "./assets/svg/app.svg"
+      .append("image")
+      .attr("href", (d) =>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
       .attr("id", d => `image-${d.id}`)
@@ -186,7 +202,19 @@ export const store = {
           .attr("r", C.radius)
           
           ,
-      (update) => update.transition().duration(750)
+      (update) => update
+      . transition().duration(750)
+
+    //  . attr("opacity", 0.0)
+     . transition().duration(750)
+      .attr("href", (d) =>{
+        let imgPath = "./assets/svg/app.svg"
+        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
+        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
+        return imgPath
+      })
+     . attr("opacity", 1.0)
+
     )
   },
 
@@ -194,8 +222,8 @@ export const store = {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     const nodes = this.state.svg
-      ?.selectAll<any, NodeModel>("g")
-      .data<NodeModel>(datastore.state.nodes.values())
+      ?.selectAll<any, NodeModel>("circle")
+      .data<NodeModel>(datastore.getNodes(), d => `circle-${d.id}`)
 
       
     //create circles
@@ -205,11 +233,18 @@ export const store = {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("fill", (d) => "rgba(0,0,0,.02)")
+          .attr("id",  d => `circle-${d.id}`)
+          .attr("stroke", "rgba(10, 200,50,0.2)")
+          .attr("stroke-width", 0)
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
+            
             if (this.state.onNodeClickCallback != null)
               this.state.onNodeClickCallback(e, d);
+
+            //add stroke to seected node
+            this.selectCircle(d)       
           })
           .transition()
           .duration(750)
@@ -220,7 +255,6 @@ export const store = {
           ,
       (update) => update.transition().duration(750)
     )
-
 
   },
   createLine() {
@@ -287,13 +321,15 @@ export const store = {
           .attr("x2", (d) => d.source.x)
           .attr("y2", (d) => d.source.y)
           .remove()
-    );
+    ).lower()
+    
+
   },
 
   createText() {
     const texts = this.state
-      .svg!.selectAll<SVGTextElement, unknown>("text")
-      .data(datastore.state.nodes.values());
+      .svg!.selectAll<SVGTextElement, NodeModel>("text")
+      .data(datastore.getNodes(), d => `text-${d.id}`);
 
     texts.join(
       (enter) =>
@@ -305,6 +341,8 @@ export const store = {
           .attr("id", (d) => `text-${d.id}`)
           .attr("text-anchor", "middle")
           .attr("fill", "transparent")
+          .attr("padding", "10")
+          .attr("background-color", "lightgrey")
           .transition()
           .duration(1750)
           .attr("fill", "black"),
@@ -313,7 +351,8 @@ export const store = {
           .transition()
           .duration(1750)
           .text((d) => d.name)
-    );
+    )
+    
   },
 
   initializeDrag() {
@@ -393,8 +432,6 @@ export const store = {
       .range([C.height, 0]);
 
     function zoomed({ transform }: { transform: d3.ZoomTransform }) {
-      console.log("called");
-
       const zx = transform.rescaleX(x).interpolate(d3.interpolateRound);
       const zy = transform.rescaleY(y).interpolate(d3.interpolateRound);
       st.transform = transform;
@@ -421,7 +458,6 @@ export const store = {
   },
 
   onDoubleClick(callback: any) {
-    console.log("hdclick");
     this.state.svg!.on("dblclick", handleDoubleClick);
     const st = this.state;
 
@@ -479,8 +515,8 @@ function createGraphInternal() {
 
 interface State {
   svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
- 
   currentNode: d3.Selection<any, unknown, null, undefined> | null;
+  selected : NodeModel | null;
   onNodeClickCallback: any | null;
   onSvgClickCallback: any | null;
   onRightClickCallback: any | null;

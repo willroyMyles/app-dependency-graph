@@ -1,19 +1,18 @@
 
 <template>
 <div v-if="node != null">
-    <div v-for="property in Object.entries(node)" :key="property[0]">
-        <a-row justify="space-between" class="prop-row" type="flex">
-            <a-col col="5">{{property[0]}}  </a-col>
-            <a-col col="3" style="background-color : none"> : </a-col>
-            <a-col col="12">
+    <div v-for="property in Object.entries(node)" :key="property[0] + node.id">
+        <a-row justify="space-between" align="middle" class="prop-row" type="flex">
+            <a-col span="4" >{{property[0]}}  </a-col>
+            <a-col >
                 <span v-if="typeof property[1] == typeof true" >
-                    <input type="checkbox" v-model="node[property[0]]" >
+                    <input type="checkbox" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if="typeof property[1] == typeof ''">
-                    <input type="text" v-model="node[property[0]]">
+                    <input type="text" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if="typeof property[1] == typeof 10">
-                    <input type="number" v-model="node[property[0]]">
+                    <input type="number" v-model="node[property[0]]" :disabled="disabled" />
                 </span>
                 <span v-if=" property[1] == null">
                     none
@@ -21,15 +20,23 @@
                 <span v-if=" property[1] instanceof Array">
                     <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
-                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]">
-                        <a-select-option v-for="val in datastore.state.nodes.values()" :key="val.id" :value="val.id" >
+                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]" :disabled="disabled">
+                        <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
+
                             {{val.name}}
+                        </a-select-option>
+                    </a-select>
+                    </div>
+                <div v-if="property[0] == 'tags'">
+                    <a-select mode="tags" style="width: 100px" v-on:change="handleTags" placeholder="no tags..." :value="node[property[0]]" :disabled="disabled">
+                        <a-select-option v-for="val in datastore.state.tags" :key="val" :value="val" >
+                            {{val}}
                         </a-select-option>
                     </a-select>
                     </div>
                 </span>
                 <span v-if=" property[1] instanceof subenum">
-                    <select v-model="node[property[0]]"  >
+                    <select v-model="node[property[0]]" :disabled="disabled" >
                             <option v-for="val in Object.values(nodetype)" :key="val.value" :value="val"  >{{val.value}}</option>
                     </select>
                 </span>
@@ -46,17 +53,18 @@
 import NodeType, { SubEnum } from '@/enums/NodeEnum';
 import NodeModel from '@/models/node';
 import ServiceModel from '@/models/ServiceModel';
-import { defineComponent , onUpdated, reactive, toRefs} from '@vue/runtime-core'
+import { defineComponent , onMounted, onUpdated, reactive, toRefs, watch} from '@vue/runtime-core'
+import { message } from 'ant-design-vue';
 import { ChangeEvent } from 'ant-design-vue/lib/_util/EventInterface';
 import {store} from '../store/DataStoreage'
 
 export default defineComponent({
     name : "ConfigView",
-    props : ["nodeid", "save"],
+    props : ["nodeProp", "disabled"],
     
-    setup(props) {
+    setup(props, ctx) {
         const state = reactive({
-            node : new ServiceModel(),
+            node : new NodeModel(),
             subenum : SubEnum,
             nodetype : NodeType,
             arr : ["arr"]
@@ -64,38 +72,53 @@ export default defineComponent({
         
         // copy our model to store node model
         state.node = {
-            ...store.getNode(props.nodeid)! as ServiceModel
+            ...props.nodeProp
         }
 
-        function updateNode(){
-             store.updateNode(state.node as NodeModel);
+        const updateNode = () =>{
+           const n =  store.updateNode(state.node);
+           state.node = new NodeModel()
+           state.node = n
+            message.info(`${n.name} node updated`, 2 )
+           return true;
         }
 
         function updateType(val : any){
-            console.log(val)
             state.node.type = NodeType.valueOf(val)!
-            console.log(state.node.type)
         }
 
         function handleConnections(d:any){
-            state.node.connections = d            
+            (state.node as ServiceModel).connections = d         
         }
 
-        onUpdated(()=>{
-            state.node = {
-            ...store.getNode(props.nodeid)! as ServiceModel
+        function getNodesConnections(){
+            let conn = store.state.nodes.values();
+            return Array.from(conn).filter(p => p.id != state.node.id)
         }
-        })
-    
+
+        function handleTags(d:string[]){
+            state.node.tags = d      
+        }
+
+        function reset(){
+            if(state.node){
+                state.node = { 
+                    ...store.getNode(state.node.id)!
+                }
+            }
+        }
 
         return {
-            ...toRefs(props),
+          //  ...toRefs(props),
             ...toRefs(state),
             onchange,
             updateNode,
             updateType,
             handleConnections,
-            datastore : store
+            getNodesConnections,
+            handleTags,
+            datastore : store,
+            reset
 
         }
     },
@@ -104,8 +127,27 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
+<style>
 .prop-row{
     padding: 5px 10px 5px 10px;
+    overflow: hidden;
+}
+
+hr {
+    background-color: lightgrey;
+    opacity: .1;
+    height: 3px;
+}
+
+input{
+    border: 1.2px solid lightgray;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+input:disabled {
+    border: none;
+    background-color: transparent;
+
 }
 </style>
