@@ -34,6 +34,7 @@ export const store = {
 
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
+        this.unselectCircle()
       })
       .on("contextmenu", function(data, index){
         const position = d3.pointer(data);
@@ -54,6 +55,7 @@ export const store = {
         this.resolveContextMenuItemClick(e, operation);
       })
 
+      this.onDoubleClick(null)
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
       .attr("width", 150)
