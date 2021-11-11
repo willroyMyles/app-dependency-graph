@@ -5,7 +5,6 @@ import * as d3 from "d3";
 import { store as datastore } from "./DataStoreage";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
-import contextmenu from "d3-context-menu";
 
 export const store = {
   DEBUG: true,
