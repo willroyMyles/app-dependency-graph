@@ -5,6 +5,7 @@
     </ul>
   </div>
   <v-col id="nodes" />
+
 </template>
 
 <script lang="ts">

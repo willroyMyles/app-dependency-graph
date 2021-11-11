@@ -18,9 +18,8 @@
                     none
                 </span>
                 <span v-if=" property[1] instanceof Array">
-                    <!-- if is connections  -->
                     <div v-if="property[0] == 'connections'">
-                    <a-select mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]" :disabled="disabled">
+                    <a-select class="input-disabled" mode="multiple" style="width: 100px" v-on:change="handleConnections" placeholder="Tags Mode" :value="node[property[0]]" :disabled="disabled">
                         <a-select-option v-for="val in getNodesConnections()" :key="val.id" :value="val.id" >
 
                             {{val.name}}
@@ -28,7 +27,7 @@
                     </a-select>
                     </div>
                 <div v-if="property[0] == 'tags'">
-                    <a-select mode="tags" style="width: 100px" v-on:change="handleTags" placeholder="no tags..." :value="node[property[0]]" :disabled="disabled">
+                    <a-select class="input-disabled" mode="tags" style="width: 100px" v-on:change="handleTags" placeholder="no tags..." :value="node[property[0]]" :disabled="disabled">
                         <a-select-option v-for="val in datastore.state.tags" :key="val" :value="val" >
                             {{val}}
                         </a-select-option>
@@ -36,7 +35,7 @@
                     </div>
                 </span>
                 <span v-if=" property[1] instanceof subenum">
-                    <select v-model="node[property[0]]" :disabled="disabled" >
+                    <select class="input-disabled" v-model="node[property[0]]" :disabled="disabled" >
                             <option v-for="val in Object.values(nodetype)" :key="val.value" :value="val"  >{{val.value}}</option>
                     </select>
                 </span>
@@ -71,9 +70,13 @@ export default defineComponent({
         })
         
         // copy our model to store node model
+
+
+        onMounted(()=>{
         state.node = {
             ...props.nodeProp
         }
+        })
 
         const updateNode = () =>{
            const n =  store.updateNode(state.node);
@@ -139,15 +142,18 @@ hr {
     height: 3px;
 }
 
-input{
+input, select, .ant-select{
     border: 1.2px solid lightgray;
     padding: 5px;
     border-radius: 3px;
 }
 
-input:disabled {
-    border: none;
-    background-color: transparent;
+input:disabled, select:disabled, .ant-select-disabled, .input-disabled:disabled, .ant-select-disabled, .ant-select-selector, .ant-select:disabled{
+    border: none !important;
+    background: transparent !important;
+    color: black !important;
 
 }
+
+
 </style>
