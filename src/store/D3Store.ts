@@ -9,6 +9,7 @@ import ServiceModel from "@/models/ServiceModel";
 export const store = {
   DEBUG: true,
 
+
   state: reactive({
     svg: null as d3.Selection<SVGSVGElement, undefined, null, undefined> | null,
     currentNode: null as d3.Selection<any, unknown, null, undefined> | null,
@@ -51,13 +52,34 @@ export const store = {
       .style("background-color", "rgba(240,240,240,1.0)")
       .attr("id", "svg")
       .on("click", () => {
+        // when you click away close context menu
+        d3.select('#myContextMenu')
+        .style('display', 'none')
+
         if (this.state.onSvgClickCallback != null)
           this.state.onSvgClickCallback();
         this.unselectCircle()
+      })
+      .on("contextmenu", function(data, index){
+        const position = d3.pointer(data);
+        d3.select('#myContextMenu')
+        .style('left', position[0] + "px")
+        .style('top', position[1]+ "px")
+        .style('display', 'block')
+
+        data.preventDefault();
       });
 
-      this.onDoubleClick(null)
+      d3.selectAll('.context-item')
+      .on('click', (e:Event, d) => {
+        d3.select('#myContextMenu')
+        .style('display', 'none')
+        console.log("top event coords: ",d3.pointer(e))
+        const operation = (<HTMLLIElement>e.target).getAttribute("data")
+        this.resolveContextMenuItemClick(e, operation);
+      })
 
+      this.onDoubleClick(null)
       const zoomDisplay = d3.create("svg").append("svg")
       .attr("height", 40)
       .attr("width", 150)
@@ -78,7 +100,6 @@ export const store = {
     this.initializeZoomRect()
 
   },
-
   initializeZoomRect(){
 
     const zoomDisplay = d3.select("#zoom-svg")
@@ -122,6 +143,10 @@ export const store = {
   },
   setOnSvgClickCallback(onclkcallback: any) {
     this.state.onSvgClickCallback = onclkcallback;
+  },
+
+  setOnRightClickCallback(onRightClickCallback: any){
+    this.state.onRightClickCallback = onRightClickCallback;
   },
 
   resetZoom(){
@@ -478,9 +503,40 @@ export const store = {
       //highlight just created node
     }
   },
+  resolveContextMenuItemClick(e:Event, d:any){
+    switch(d){
+      case "createNode":{
+        this.createNode(e);
+        break;
+      }
+      default: {
+        console.log("No Operation defined")
+        break;
+      }
+    }
+
+  },
+  createNode(e:Event){
+    console.log("creating new node");
+    const st = this.state;
+    
+    //initializing the d3 pointer event
+    const mouse = d3.pointer(e);
+    console.log(mouse)
+    const t = st.transform.invert([mouse[0], mouse[1]]);
+
+    // create new node
+    const node = new ServiceModel();
+    node.x = t[0];
+    node.y = t[1];
+
+    //add node to list
+    datastore.addNode(node);
+
+    createGraphInternal();
+  }
 };
 
 function createGraphInternal() {
   store.createGraph();
 }
-

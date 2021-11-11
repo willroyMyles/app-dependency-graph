@@ -1,6 +1,11 @@
 <template>
+  <div id="myContextMenu" class="d3-context">
+    <ul class="context-menu-ul">
+      <li class="d3-context-menu-list-item context-item" data="createNode">create new node</li>
+    </ul>
+  </div>
+  <v-col id="nodes" />
 
-  <a-col id="nodes" />
 </template>
 
 <script lang="ts">
@@ -18,12 +23,11 @@ import { store as d3Store } from "../../store/D3Store";
 import {store as datastore} from '../../store/DataStoreage'
 export default defineComponent({
   name: "Content",
-  components : {
-  },
   setup() {
     const state = reactive({
       drawerVisible: false,
       node : null as NodeModel | null,
+      menu: false,
     });
 
     const updateNode = ref()
@@ -37,7 +41,12 @@ export default defineComponent({
 
     onMounted(() => {
       generateNodes();
+      d3Store.setOnRightClickCallback(makeMenusVisible);
     });
+
+    function makeMenusVisible(){
+      state.menu = true;
+    }
 
     function onDrawerClose() {
       state.drawerVisible = false;
@@ -70,7 +79,6 @@ export default defineComponent({
   },
 });
 </script>
-
 <style scoped>
 .content {
   /* height: 80vh; */
