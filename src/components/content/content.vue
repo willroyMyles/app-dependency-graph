@@ -1,6 +1,6 @@
 <template>
 
-  <v-col id="nodes" />
+  <a-col id="nodes" />
 </template>
 
 <script lang="ts">

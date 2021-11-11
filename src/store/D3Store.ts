@@ -9,26 +9,35 @@ import ServiceModel from "@/models/ServiceModel";
 export const store = {
   DEBUG: true,
 
-  state: reactive<State>({
-    svg: null,
-    currentNode: null,
-    selected : null,
-    onNodeClickCallback: null,
-    onSvgClickCallback: null,
+  state: reactive({
+    svg: null as d3.Selection<SVGSVGElement, undefined, null, undefined> | null,
+    currentNode: null as d3.Selection<any, unknown, null, undefined> | null,
+    selected : null as NodeModel | null,
+    onNodeClickCallback: null as any,
+    onSvgClickCallback: null as any,
     transform: new d3.ZoomTransform(1, 0, 0),
+    nodeToHighlight : null as string | null
   }),
 
   unselectCircle(){
     if(this.state.selected != null){
           
-      d3.select(`#circle-${this.state.selected.id}`).transition().duration(500).attr("stroke-width", 0)
+      d3.select(`#circle-${this.state.selected.id}`).transition().duration(500)
+      .attr("stroke-width", 0)     
+      .attr("stroke", "transparent")      
+      .attr("opacity", 1)
+      .attr("r", C.radius)
       this.state.selected = null
     }
   },
 
   selectCircle(d : NodeModel){
       if(this.state.selected != null) this.unselectCircle()
-      d3.select(`#circle-${d.id}`).transition().duration(500).attr("stroke-width", 5)
+      d3.select(`#circle-${d.id}`).transition().duration(500)
+      .attr("stroke-width", 5) 
+      .attr("stroke", "rgba(10, 200,50,0.2)")
+      .attr("opacity", 1)
+      .attr("r", C.radius)
       this.state.selected = d
   },
 
@@ -144,6 +153,8 @@ export const store = {
     this.createLine();
 
     this.state.svg?.selectAll("circle").raise();
+    this.highlightNode(null)
+
   },
 
   async createImages(){
@@ -193,6 +204,19 @@ export const store = {
     )
   },
 
+  highlightNode( d : any){
+
+    if(this.state.nodeToHighlight){
+      const nodeToHighlight = this.state.svg?.select(`#${this.state.nodeToHighlight}`)
+      const data = nodeToHighlight?.data()[0];      
+      this.state.onNodeClickCallback(null, data)
+      this.selectCircle(data as any)
+      this.state.nodeToHighlight = null
+    }
+
+    return d;
+  },
+
   createCircles() {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -211,6 +235,8 @@ export const store = {
           .attr("id",  d => `circle-${d.id}`)
           .attr("stroke", "rgba(10, 200,50,0.2)")
           .attr("stroke-width", 0)
+          .attr("r", C.radius * 3)
+
           .on("click", (e: Event, d) => {
             e.stopPropagation();
             datastore.state.currentObjectNode = d;
@@ -223,9 +249,9 @@ export const store = {
           })
           .transition()
           .duration(750)
-          // .attr("transform", this.state.transform as any)
           .attr("opacity", 1)
           .attr("r", C.radius)
+          // .call(d => this.highlightNode(d as any))
           
           ,
       (update) => update.transition().duration(750)
@@ -443,11 +469,13 @@ export const store = {
       const node = new ServiceModel();
       node.x = t[0];
       node.y = t[1];
+      st.nodeToHighlight = `circle-${node.id}`
 
       //add node to list
       datastore.addNode(node);
 
       createGraphInternal();
+      //highlight just created node
     }
   },
 };
@@ -456,11 +484,3 @@ function createGraphInternal() {
   store.createGraph();
 }
 
-interface State {
-  svg: d3.Selection<SVGSVGElement, undefined, null, undefined> | null;
-  currentNode: d3.Selection<any, unknown, null, undefined> | null;
-  selected : NodeModel | null;
-  onNodeClickCallback: any | null;
-  onSvgClickCallback: any | null;
-  transform: d3.ZoomTransform;
-}
