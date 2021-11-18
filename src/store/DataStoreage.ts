@@ -42,6 +42,7 @@ export const store ={
         this.getTags()
       },
 
+      
     addNode(node : NodeModel){
       this.state.nodes.set(node.id, node)
       this.addTags(node.tags)
