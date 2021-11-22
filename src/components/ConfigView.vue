@@ -80,14 +80,16 @@
                     </a-collapse>
                 </a-col>
                 <a-row justify="space-between" align="middle" v-else>
-                    <a-col span="12">
-                        {{property[0]}}
-                    </a-col>
+                    <span>
+                       {{property[0]}}
+                    </span>
 
-                    <a-col span="12">
-                        <span v-if="typeof property[1] == typeof true">
+                    <a-col span="10" >
+
+                    <span v-if="typeof property[1] == typeof true" >
                         <input type="checkbox" v-model="node[property[0]]" :disabled="disabled" />
                     </span>
+                    
                     <span v-if="typeof property[1] == typeof ''">
                         <input type="text" v-model="node[property[0]]" :disabled="disabled" />
                     </span>

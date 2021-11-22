@@ -522,7 +522,7 @@ export const store = {
     //add node to list
     datastore.addNode(node);
 
-    createGraphInternal();
+    // createGraphInternal();
     //highlight just created node
   }
 };

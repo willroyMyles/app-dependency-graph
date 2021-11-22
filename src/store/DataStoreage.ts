@@ -46,9 +46,11 @@ export const store ={
         apiStore.getGraph();
       },
 
-    addNode(node : NodeModel){
-      this.state.nodes.set(node.id, node)
+    async addNode(node : NodeModel){
+      const createdNode = await NodeApis.addNode(apiStore.state.currentGraph.id, node);
+      this.state.nodes.set(createdNode.id, createdNode)
       this.addTags(node.tags)
+      d3store.createGraph();
     },
 
     addTag(tag : string){
