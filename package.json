@@ -10,6 +10,7 @@
   "dependencies": {
     "@types/core-js": "^2.5.5",
     "ant-design-vue": "^2.2.8",
+    "axios": "^0.24.0",
     "babel-plugin-import": "^1.13.3",
     "core-js": "^3.6.5",
     "d3": "^7.1.0",

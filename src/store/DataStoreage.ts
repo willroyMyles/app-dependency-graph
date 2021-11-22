@@ -5,6 +5,7 @@ import ServiceModel from "@/models/ServiceModel";
 import { reactive } from "@vue/runtime-core";
 import * as d3 from "d3";
 import {store as d3store} from './D3Store'
+import {apiStore} from '@/api/api'
 
 
 export const store ={
@@ -40,6 +41,8 @@ export const store ={
         this.createConnection(wa.id, esif.id);
 
         this.getTags()
+
+        apiStore.getGraph();
       },
 
     addNode(node : NodeModel){
