@@ -86,6 +86,7 @@ export default defineComponent({
 
 .content {
     height: 90vh;
+    overflow: scroll;
 }
 
 .bottom {
@@ -93,10 +94,11 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   width: 100%;
-  bordertop: 1px solid #e9e9e9;
+  height: 10vh;
+  border-top: 1px solid #e9e9e9;
   padding: 10px 16px;
   background: #fff;
-  textalign: right;
-  zindex: 1;
+  text-align: right;
+  z-index: 1;
 }
 </style>
