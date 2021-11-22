@@ -1,3 +1,4 @@
+import { reactive } from "@vue/runtime-core";
 import axios from "axios"
 
 const endpoint = "http://localhost:8081/";
@@ -7,6 +8,15 @@ const operations = {
 
 
 export const apiStore = {
+    state : reactive({
+        graphs : [] as any[],
+        currentGraph : {}
+    }),
+    _setGraphs(graphs : any[]){
+        this.state.graphs = graphs;
+        console.log(this.state.graphs);
+        
+    },
     createGraph(){
         // no
     },
@@ -14,9 +24,8 @@ export const apiStore = {
 
         try{
             const res = await axios.get(operations.getGraph);
-            console.log(res);
+            this._setGraphs(res.data.data)
             
-
         }catch(e){
             console.log(e);
             
