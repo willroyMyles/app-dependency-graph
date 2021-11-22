@@ -6,6 +6,7 @@ import { reactive } from "@vue/runtime-core";
 import * as d3 from "d3";
 import {store as d3store} from './D3Store'
 import {apiStore} from '@/api/api'
+import {NodeApis} from '@/api/NodesApi'
 
 
 export const store ={
@@ -17,6 +18,16 @@ export const store ={
           tags : new Set<string>()
         }
     }),
+
+    async loadNodes(){
+      const nodes = await NodeApis.getNodes(apiStore.state.currentGraph.id as string);
+      nodes.forEach((element : any) => {
+        this.state.nodes.set(element.id, element);
+      });
+      console.log(nodes);
+      d3store.createGraph();
+      
+    },
 
     initialize() {  
         const radius = 50

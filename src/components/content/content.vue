@@ -35,8 +35,11 @@ export default defineComponent({
 
     const generateNodes = async () => {
       d3Store.initialize(d3.select("#nodes"));
-      d3Store.createGraph()
-      console.log("generated nodes");
+      datastore.loadNodes();
+      //call nodes from backend
+
+      // d3Store.createGraph()
+      // console.log("generated nodes");
     };
 
     onMounted(() => {

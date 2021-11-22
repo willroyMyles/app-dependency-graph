@@ -10,13 +10,17 @@ const operations = {
 export const apiStore = {
     state : reactive({
         graphs : [] as any[],
-        currentGraph : {}
+        currentGraph : {} as any
     }),
     _setGraphs(graphs : any[]){
         this.state.graphs = graphs;
         console.log(this.state.graphs);
-        
     },
+
+    setCurrentGraph(idx : number){
+        this.state.currentGraph = this.state.graphs[idx];
+    },
+
     createGraph(){
         // no
     },

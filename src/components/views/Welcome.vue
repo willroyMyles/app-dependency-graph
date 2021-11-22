@@ -1,11 +1,11 @@
 <template>
-  <div v-if="ready" >
+  <div v-if="!graphLoaded" >
       <a-row align="middle" class="page">
           <a-col span="6"></a-col>
           <a-col span="12">
               <a-card :loading="loading" title="graphs">
                   <div v-if="graphs.length > 0">
-                      <div v-for="graph in graphs" :key="graph.id" class="graph-btn">
+                      <div v-for="(graph, index) in graphs" :key="graph.id" class="graph-btn" @click="loadupGraphToBomBoClaat(index)">
                           {{graph.name}}
                       </div>
                   </div>
@@ -35,7 +35,7 @@ export default defineComponent ({
     setup(){
 
         const state = reactive({
-            ready : true,
+            graphLoaded : false,
             loading : true,
             graphs : [] as any[]
         })
@@ -47,10 +47,16 @@ export default defineComponent ({
                 state.graphs = apiStore.state.graphs;
             }
         })
+
+        function loadupGraphToBomBoClaat(idx : number){
+            const ans = apiStore.setCurrentGraph(idx)
+            state.graphLoaded = true;
+        }
     
     
         return {
             ...toRefs(state),
+            loadupGraphToBomBoClaat
         }
 
 
