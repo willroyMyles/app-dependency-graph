@@ -6,6 +6,13 @@ import { store as datastore } from "./DataStoreage";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
 
+function isService(obj : any){
+  return obj == "SERVICE"
+}
+function isDatabase(obj : any){
+  return obj == "DATABASE"
+}
+
 export const store = {
   DEBUG: true,
 
@@ -196,8 +203,8 @@ export const store = {
       .append("image")
       .attr("href", (d) =>{
         let imgPath = "./assets/svg/app.svg"
-        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
-        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
+        if( isService(d.type as any)) imgPath = "./assets/svg/app.svg"
+        if( !isService(d.type as any)) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
       .attr("id", d => `image-${d.id}`)

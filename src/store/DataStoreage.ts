@@ -7,6 +7,7 @@ import * as d3 from "d3";
 import {store as d3store} from './D3Store'
 import {apiStore} from '@/api/api'
 import {NodeApis} from '@/api/NodesApi'
+import { isDatabase, isService } from "@/helper/Helper";
 
 
 export const store ={
@@ -25,6 +26,7 @@ export const store ={
         this.state.nodes.set(element.id, element);
       });
       console.log(nodes);
+      this.initialize();
       d3store.createGraph();
       
     },
@@ -33,23 +35,11 @@ export const store ={
         const radius = 50
         const width = window.outerWidth
         const height = window.outerHeight
-
-        const esif = new ServiceModel("esif")
-        const wa = new ServiceModel("web admin")
-        const rs = new ServiceModel("Reward service")
-
-        this.state.nodes.set(esif.id, esif)
-        this.state.nodes.set(wa.id, wa)
-        this.state.nodes.set(rs.id, rs)
   
         this.state.nodes.forEach((v)=>{
           v.x = Math.random() * (width - radius * 2) + radius;
           v.y = Math.random() * (height - radius * 2) + radius;
         })
-
-        this.createConnection(wa.id, rs.id);
-        this.createConnection(esif.id, rs.id);
-        this.createConnection(wa.id, esif.id);
 
         this.getTags()
 
@@ -109,7 +99,7 @@ export const store ={
       const link : Links[][] = [];
       const nodes = this.getNodes()
       nodes.forEach((node, key) => {
-        if(node.type.isService()){          
+        if(isService(node.type)){          
           let linksInArray =  (node as ServiceModel).connections.map((connection, index) => {
             if(nodes.includes(node) && nodes.includes(this.getNode(connection) || new NodeModel())){
               return <Links>{
@@ -147,13 +137,12 @@ export const store ={
 
     updateNode(node : NodeModel) : NodeModel{
         let n : NodeModel | null= null;
-        if(node.type.isDatabase()) n = new DatabaseModel(node.name, node)
-        if(node.type.isService()) n = new ServiceModel(node.name, node)
+        if( isDatabase(node.type)) n = new DatabaseModel(node.name, node)
+        if( isService(node.type)) n = new ServiceModel(node.name, node)
         
         this.addNode(n!)
         d3store.createGraph();
         return n!;
-      // should update graph
     },
 
     filterByTag(tag : string[]) {      
@@ -167,4 +156,4 @@ export interface Links{
   target : NodeModel
 }
 
-store.initialize()
+// store.initialize()
