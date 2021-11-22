@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+// import App from './App.vue'
+import App from './components/views/Welcome.vue'
 import store from './store'
-import {Button, Layout, Col, Row, Drawer, Select , Input} from 'ant-design-vue'
+import {Button, Layout, Col, Row, Drawer, Select , Input, Card} from 'ant-design-vue'
 import "ant-design-vue/dist/antd.css"; // or 'ant-design-vue/dist/antd.less'
 
 
@@ -14,4 +15,5 @@ createApp(App)
 .use(Drawer)
 .use(Select)
 .use(Input)
+.use(Card)
 .mount('#app')

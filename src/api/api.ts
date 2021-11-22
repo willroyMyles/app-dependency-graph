@@ -20,15 +20,15 @@ export const apiStore = {
     createGraph(){
         // no
     },
-    async getGraph(id : string | null = null) {
+    async getGraph(id : string | null = null) : Promise<boolean> {
 
         try{
             const res = await axios.get(operations.getGraph);
             this._setGraphs(res.data.data)
-            
+            return Promise.resolve(true);
         }catch(e){
             console.log(e);
-            
+            return Promise.resolve(false);
         }
     },
     updateGraph(id:string){
