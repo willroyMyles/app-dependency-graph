@@ -39,7 +39,7 @@ import {
   ref,
   toRefs,
 } from "vue";
-import { store } from "@/store/DataStoreage";
+import { store } from "@/store/DataStore";
 
 export default defineComponent({
   name: "SideBarMenu",

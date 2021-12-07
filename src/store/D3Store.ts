@@ -1,10 +1,11 @@
-import NodeModel from "@/models/node";
+// import any from "@/models/node";
 import { reactive } from "@vue/runtime-core";
 import C from "./ConstantsStore";
 import * as d3 from "d3";
-import { store as datastore } from "./DataStoreage";
+import { store as datastore } from "./DataStore";
 import NodeType, { SubEnum } from "@/enums/NodeEnum";
 import ServiceModel from "@/models/ServiceModel";
+import { getImageForType } from "@/helper/Helper";
 
 function isService(obj : any){
   return obj == "SERVICE"
@@ -20,7 +21,7 @@ export const store = {
   state: reactive({
     svg: null as d3.Selection<SVGSVGElement, undefined, null, undefined> | null,
     currentNode: null as d3.Selection<any, unknown, null, undefined> | null,
-    selected : null as NodeModel | null,
+    selected : null as any | null,
     onNodeClickCallback: null as any,
     onSvgClickCallback: null as any,
     onRightClickCallback: null as any,
@@ -40,7 +41,7 @@ export const store = {
     }
   },
 
-  selectCircle(d : NodeModel){
+  selectCircle(d : any){
       if(this.state.selected != null) this.unselectCircle()
       d3.select(`#circle-${d.id}`).transition().duration(500)
       .attr("stroke-width", 5) 
@@ -192,8 +193,8 @@ export const store = {
 
   async createImages(){
     const nodes = this.state.svg
-    ?.selectAll<any, NodeModel>("image")
-    .data<NodeModel>(datastore.getNodes(), d => `img-${d.id}`)
+    ?.selectAll<any, any>("image")
+    .data<any>(datastore.getNodes(), d => `img-${d.id}`)
 
 
     // #### images have to be in public folder in path
@@ -202,10 +203,7 @@ export const store = {
       enter => enter 
       .append("image")
       .attr("href", (d) =>{
-        let imgPath = "./assets/svg/app.svg"
-        if( isService(d.type as any)) imgPath = "./assets/svg/app.svg"
-        if( !isService(d.type as any)) imgPath = "./assets/svg/db.svg"        
-        return imgPath
+        return getImageForType(d.type)
       })
       .attr("id", d => `image-${d.id}`)
       .attr("x", d => d.x)
@@ -228,8 +226,8 @@ export const store = {
      . transition().duration(750)
       .attr("href", (d) =>{
         let imgPath = "./assets/svg/app.svg"
-        if(d.type.isService()) imgPath = "./assets/svg/app.svg"
-        if(d.type.isDatabase()) imgPath = "./assets/svg/db.svg"        
+        if( isService(d.type)) imgPath = "./assets/svg/app.svg"
+        if(isDatabase(d.type)) imgPath = "./assets/svg/db.svg"        
         return imgPath
       })
      . attr("opacity", 1.0)
@@ -254,8 +252,8 @@ export const store = {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
     const nodes = this.state.svg
-      ?.selectAll<any, NodeModel>("circle")
-      .data<NodeModel>(datastore.getNodes(), d => `circle-${d.id}`)
+      ?.selectAll<any, any>("circle")
+      .data<any>(datastore.getNodes(), d => `circle-${d.id}`)
 
       
     //create circles
@@ -294,7 +292,7 @@ export const store = {
   createLine() {
     const lineData = datastore.getLinks();
     const lines = this.state.svg
-      ?.selectAll<SVGLineElement, { source: NodeModel; target: NodeModel }>(
+      ?.selectAll<SVGLineElement, { source: any; target: any }>(
         "line"
       )
       .data(lineData, (d) => d.source.id + d.target.id);
@@ -362,7 +360,7 @@ export const store = {
 
   createText() {
     const texts = this.state
-      .svg!.selectAll<SVGTextElement, NodeModel>("text")
+      .svg!.selectAll<SVGTextElement, any>("text")
       .data(datastore.getNodes(), d => `text-${d.id}`);
 
     texts.join(
@@ -393,10 +391,10 @@ export const store = {
     const st = this.state;
 
     this.state.svg
-      ?.selectAll<SVGCircleElement, NodeModel>("circle")
+      ?.selectAll<SVGCircleElement, any>("circle")
       .call(
         d3
-          .drag<SVGCircleElement, NodeModel>()
+          .drag<SVGCircleElement, any>()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended)
@@ -422,7 +420,7 @@ export const store = {
 
       //get lines and update them from infomodel
       st.svg
-        ?.selectAll<SVGLineElement, { source: NodeModel; target: NodeModel }>(
+        ?.selectAll<SVGLineElement, { source: any; target: any }>(
           "line"
         )
         .attr("x1", function (d) {

@@ -26,11 +26,7 @@ export const NodeApis = {
             const en = new SubEnum(node.type.value);
             node.type = en.value
             
-            const result = await axios.post(`${operations.getNodes}${graphId}/nodes`, node, {
-                headers : {
-
-                }
-            });
+            const result = await axios.post(`${operations.getNodes}${graphId}/nodes`, node,);
             console.log(result, "res");
             const data = result.data.data;
             return Promise.resolve(data)
@@ -40,5 +36,28 @@ export const NodeApis = {
             return Promise.reject("could not create node")
             
         }
-    }
+    },
+
+    
+    async updateNode(graphId:string, node : any){
+        try{
+            console.log(graphId, node);
+            axios.defaults.headers.common = {}
+            
+            const result = await axios.post(`${operations.getNodes}${graphId}/nodes`, node,);
+            console.log(result, "res");
+            const data = result.data.data;
+            return Promise.resolve(data)
+            
+        }catch(e){
+            console.log(e);
+            return Promise.reject("could not create node")
+            
+        }
+    },
+
+
+     
+
+
 }

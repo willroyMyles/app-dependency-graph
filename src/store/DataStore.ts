@@ -7,12 +7,12 @@ import * as d3 from "d3";
 import {store as d3store} from './D3Store'
 import {apiStore} from '@/api/api'
 import {NodeApis} from '@/api/NodesApi'
-import { isDatabase, isService } from "@/helper/Helper";
+import { getType, isDatabase, isService } from "@/helper/Helper";
 
 
 export const store ={
     state : reactive({
-        nodes: new Map<string, NodeModel>(),
+        nodes: new Map<string, any>(),
         tags : new Set<string>(),
         currentObjectNode : null as NodeModel | null,
         filter : {
@@ -23,6 +23,9 @@ export const store ={
     async loadNodes(){
       const nodes = await NodeApis.getNodes(apiStore.state.currentGraph.id as string);
       nodes.forEach((element : any) => {
+        element.type = getType(element.type);
+        console.log(element, getType(element.type));
+        
         this.state.nodes.set(element.id, element);
       });
       console.log(nodes);
@@ -42,13 +45,17 @@ export const store ={
         })
 
         this.getTags()
-
-        apiStore.getGraph();
       },
 
     async addNode(node : NodeModel){
       const createdNode = await NodeApis.addNode(apiStore.state.currentGraph.id, node);
       this.state.nodes.set(createdNode.id, createdNode)
+      this.addTags(node.tags)
+      d3store.createGraph();
+    },
+
+    addNodeTograph(node : NodeModel){
+      this.state.nodes.set(node.id, node)
       this.addTags(node.tags)
       d3store.createGraph();
     },
@@ -62,15 +69,15 @@ export const store ={
       tags.map((tag) => this.addTag(tag))
     },
 
-    getNodes() : NodeModel[]  {      
+    getNodes() : any[]  {      
       let arr = Array.from(this.state.nodes.values())
-      const newArr : Map<string, NodeModel> = new Map()
+      const newArr : Map<string, any> = new Map()
       //filter is anything 
       if(this.state.filter.tags.size != 0){
         
         arr.forEach((node, index) => {
           // call filter on the node 
-          node.tags.forEach((tag, idx) =>{
+          node.tags.forEach((tag : string, idx : number) =>{
             if(this.state.filter.tags.has(tag)){
               newArr.set(node.id, node)
             }
@@ -127,7 +134,7 @@ export const store ={
     getTags() : Array<string>{
       const _tags : string[][] = [];
       this.state.nodes.forEach((node, key) => {          
-          const linksInArray =  node.tags.map((tag, index) => {
+          const linksInArray =  node.tags.map((tag : string, index : number) => {
             return tag
           })
           _tags.push(linksInArray)
@@ -137,14 +144,12 @@ export const store ={
       return Array.from(this.state.tags);
     },
 
-    updateNode(node : NodeModel) : NodeModel{
-        let n : NodeModel | null= null;
-        if( isDatabase(node.type)) n = new DatabaseModel(node.name, node)
-        if( isService(node.type)) n = new ServiceModel(node.name, node)
+    async updateNode(node : any) : Promise<any>{
+
+        const n = await NodeApis.updateNode(apiStore.state.currentGraph.id, node);
         
-        this.addNode(n!)
-        d3store.createGraph();
-        return n!;
+        this.addNodeTograph(n)
+        return Promise.resolve(n);
     },
 
     filterByTag(tag : string[]) {      

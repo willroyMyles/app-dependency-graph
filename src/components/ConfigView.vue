@@ -80,25 +80,43 @@
                     </a-collapse>
                 </a-col>
                 <a-row justify="space-between" align="middle" v-else>
-                    <span>
+                    <a-col span="10">
                        {{property[0]}}
-                    </span>
+                    </a-col>
+                    <a-col span="5"></a-col>
 
-                    <a-col span="10" >
+                    <a-col span="9" >
 
                     <span v-if="typeof property[1] == typeof true" >
                         <input type="checkbox" v-model="node[property[0]]" :disabled="disabled" />
                     </span>
-                    
-                    <span v-if="typeof property[1] == typeof ''">
-                        <input type="text" v-model="node[property[0]]" :disabled="disabled" />
+
+                    <span v-if="typeof property[1] == typeof '' && property[0] == 'type'">
+                        <select
+                                    class="input-disabled"
+                                    v-model="node[property[0]]"
+                                    width="100%"
+                                    :disabled="disabled"
+                                >
+                                    <option
+                                        v-for="val in Object.values(nodetype)"
+                                        :key="val"
+                                        :value="val"
+                                    >{{ val }}</option>
+                                </select>
                     </span>
+                    <span v-if="typeof property[1] == typeof ''">
+                        <input :type="typeof property[1]" v-model="node[property[0]]" :disabled="disabled" />
+                    </span>
+
                     <span v-if="typeof property[1] == typeof 10">
-                        <input type="number" v-model="node[property[0]]" :disabled="disabled" />
+                        <input :type="typeof property[1]" v-model="node[property[0]]" :disabled="disabled" />
                     </span>
 
                  
-                    <span v-if="property[1] == null">none</span>
+                    <span v-if="property[1] == null">
+                        <input :type="typeof property[1]" v-model="node[property[0]]" :disabled="disabled" placeholder="none"/>
+                    </span>
                     </a-col>
 
                 </a-row>
@@ -109,7 +127,7 @@
 </template>
 
 <script lang="ts">
-import NodeType, { SubEnum } from "@/enums/NodeEnum";
+import NodeType, { NodeTypeEnum, SubEnum } from "@/enums/NodeEnum";
 import NodeModel from "@/models/node";
 import ServiceModel from "@/models/ServiceModel";
 import {
@@ -122,7 +140,7 @@ import {
 } from "@vue/runtime-core";
 import { message } from "ant-design-vue";
 import { ChangeEvent } from "ant-design-vue/lib/_util/EventInterface";
-import { store } from "../store/DataStoreage";
+import { store } from "../store/DataStore"
 
 export default defineComponent({
     name: "ConfigView",
@@ -132,7 +150,7 @@ export default defineComponent({
         const state = reactive({
             node: new NodeModel(),
             subenum: SubEnum,
-            nodetype: NodeType,
+            nodetype: NodeTypeEnum,
             arr: ["arr"],
             activeKey: ["1"],
         });
@@ -145,8 +163,8 @@ export default defineComponent({
             };
         });
 
-        const updateNode = () => {
-            const n = store.updateNode(state.node);
+        const updateNode =async () => {
+            const n = (await store.updateNode(state.node)) as NodeModel;
             state.node = new NodeModel();
             state.node = n;
             message.info(`${n.name} node updated`, 2);
@@ -236,10 +254,12 @@ select:disabled,
     width: 100% !important;
 }
 
-.col-panel{
-    background-color: rgba(253, 253, 253, 1) !important;
-    padding: 0px;
-    margin: 0px !important;
+
+
+.ant-collapse-icon-position-right > .ant-collapse-item > .ant-collapse-header{
+        background-color: rgb(231, 231, 231) !important;
+    padding: 3px !important;
+    margin: none !important;
     border: none !important;
 }
 </style>

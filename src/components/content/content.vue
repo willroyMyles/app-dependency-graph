@@ -20,7 +20,7 @@ import {
 import { VueElement } from "@vue/runtime-dom";
 import * as d3 from "d3";
 import { store as d3Store } from "../../store/D3Store";
-import {store as datastore} from '../../store/DataStoreage'
+import {store as datastore} from '../../store/DataStore'
 export default defineComponent({
   name: "Content",
   setup() {
@@ -54,7 +54,6 @@ export default defineComponent({
     function onDrawerClose() {
       state.drawerVisible = false;
       state.node = null
-      
     }
 
     function openDrawer(node : NodeModel) {

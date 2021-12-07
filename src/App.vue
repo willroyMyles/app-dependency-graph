@@ -57,7 +57,6 @@ import NodeModel from "./models/node";
 import ConstantsStore from "./store/ConstantsStore";
 import ConfigView from "./components/ConfigView.vue";
 import { store as d3Store } from "./store/D3Store";
-import { store } from "./store/DataStoreage";
 import SideBarMenu from "./components/SideBarMenu.vue";
 
 export default defineComponent({

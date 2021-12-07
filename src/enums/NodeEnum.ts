@@ -19,4 +19,9 @@ export  default class NodeType extends Enumify<SubEnum>(){
     }
 }
 
+export enum NodeTypeEnum{
+    SERVICE = "SERVICE",
+    DATABASE = "DATABASE"
+}
+
 
